@@ -1,0 +1,7 @@
+{
+  "files": {
+    "apis/am/text.lua": "3ea89e76f97b416d38c29d1f6639953c8b80e3e2861ae09ec015007f884e6ccc",
+    "apis/am/ui.lua": "fc9137476cc87d33a0c7d8497bc98800b0551841dbdab7ddece4a7a95ae07f2d"
+  },
+  "dependencies": []
+}
