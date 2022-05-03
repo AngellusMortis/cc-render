@@ -2,7 +2,8 @@
     "Lua.diagnostics.disable": [
         "unused-local",
         "lowercase-global",
-        "unused-function"
+        "unused-function",
+        "err-esc"
     ],
     "Lua.diagnostics.severity": {
         "redefined-local": "Warning"
@@ -43,4 +44,7 @@
         "_"
     ],
     "Lua.runtime.version": "Lua 5.1",
+    "Lua.workspace.library": [
+        "${workspace}/../cc-updater/src/apis/"
+    ],
 }

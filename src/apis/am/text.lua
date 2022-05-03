@@ -1,18 +1,18 @@
 local v = require("cc.expect")
 
 local ghu = require(settings.get("ghu.base") .. "core/apis/ghu")
-local core = require("am.cc")
+local core = require("am.core")
 
 local text = {}
 
----------------------------------------
--- Simple Color Encoding
---
--- error: will result in red text
--- warning: will result in yellow text
--- success: will result in green text
--- info: will result in blue text
----------------------------------------
+---Simple Color Encoding
+---
+---error: will result in red text
+---warning: will result in yellow text
+---success: will result in green text
+---info: will result in blue text
+---@param msg string
+---@return string, number?
 function text.getTextColor(msg)
     local parts = core.split(msg, ":")
     local color = nil
@@ -35,14 +35,12 @@ function text.getTextColor(msg)
     return msg, color
 end
 
----------------------------------------
--- Writes Color Encoded Text
---
--- output: monitor or term to output to can be left out and will default to terminal
--- msg: text to write to output
--- x: x position to output to, default to current x pos for output
--- y: y position to output to, default to current y pos for output
----------------------------------------
+---Writes Color Encoded Text
+---
+---@param output table|string monitor or term to output to can be left out and will default to terminal
+---@param msg? string text to write to output
+---@param x? number x position to output to, default to current x pos for output
+---@param y? number y position to output to, default to current y pos for output
 function text.write(output, msg, x, y)
     if type(output) ~= "table" then
         y = x
@@ -50,6 +48,10 @@ function text.write(output, msg, x, y)
         msg = output
         output = term
     end
+    v.expect(1, output, "table")
+    v.expect(2, msg, "string")
+    v.expect(3, x, "number", "nil")
+    v.expect(4, y, "number", "nil")
     local oldX, oldY = output.getCursorPos()
     local oldColor = output.getTextColor()
 
@@ -59,10 +61,6 @@ function text.write(output, msg, x, y)
     if y == nil then
         y = oldY
     end
-    v.expect(1, output, "table")
-    v.expect(2, msg, "string")
-    v.expect(3, x, "number")
-    v.expect(4, y, "number")
 
     local actualMsg, color = text.getTextColor(msg)
     output.setCursorPos(x, y)
@@ -74,13 +72,12 @@ function text.write(output, msg, x, y)
     output.setCursorPos(oldX, oldY)
 end
 
----------------------------------------
--- Writes Color Encoded Text Centered
---
--- output: monitor or term to output to can be left out and will default to terminal
--- msg: text to write to output centered on line
--- y: y position to output to, default to current y pos for output
--- clear: clear the line before writing, default to true
+---Writes Color Encoded Text Centered
+---
+---@param output table|string monitor or term to output to can be left out and will default to terminal
+---@param msg? string text to write to output centered on line
+---@param y? number y position to output to, default to current y pos for output
+---@param clear? boolean clear the line before writing, default to true
 ---------------------------------------
 function text.center(output, msg, y, clear)
     if type(output) ~= "table" then
@@ -88,6 +85,11 @@ function text.center(output, msg, y, clear)
         msg = output
         output = term
     end
+    ---@cast output table
+    v.expect(1, output, "table")
+    v.expect(2, msg, "string")
+    v.expect(3, y, "number", "nil")
+    v.expect(4, clear, "boolean", "nil")
     local oldX, oldY = output.getCursorPos()
     local oldColor = output.getTextColor()
     local width, _ = output.getSize()
@@ -98,10 +100,6 @@ function text.center(output, msg, y, clear)
     if clear == nil then
         clear = true
     end
-    v.expect(1, output, "table")
-    v.expect(2, msg, "string")
-    v.expect(3, y, "number")
-    v.expect(4, clear, "boolean")
 
     local actualMsg, color = text.getTextColor(msg)
     if clear then
