@@ -64,13 +64,11 @@ function UILoop:run(uiObj, ...)
             self.running = false
         else
             for _, obj in ipairs(objs) do
-                if output == nil then
-                    if h.isUIScreen(obj) then
-                        output = obj.output
+                if h.isUIScreen(obj) then
+                    if obj:handle({event, unpack(args)}) then
+                        break
                     end
-                end
-
-                if output ~= nil and obj:handle(output, {event, unpack(args)})then
+                elseif output ~= nil and obj:handle(output, {event, unpack(args)})then
                     break
                 end
             end

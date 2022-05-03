@@ -1,4 +1,4 @@
-local ghu = require(settings.get("ghu.base") .. "core/apis/ghu")
+require(settings.get("ghu.base") .. "core/apis/ghu")
 
 local ui = require("am.ui")
 local s = ui.Screen(term, {textColor=colors.white, backgroundColor=colors.black})

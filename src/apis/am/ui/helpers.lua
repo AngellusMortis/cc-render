@@ -1,6 +1,8 @@
 local v = require("cc.expect")
 
 local object = require("ext.object")
+local c = require("am.ui.const")
+local core = require("am.core")
 
 ---Get actual FrameScreen object
 ---@param output am.ui.FrameScreenCompat|am.ui.FrameScreen output
@@ -104,14 +106,35 @@ local function isPos(obj)
     return is("am.ui.b.ScreenPos", obj)
 end
 
+-- Gets output for an event
+---@param event string Event name
+---@vararg any
+---@returns cc.output? event canceled
+local function getEventOutput(event, ...)
+    ---@diagnostic disable-next-line: redefined-local
+    local event, args = core.cleanEventArgs(event, ...)
+    v.expect(1, event, "string")
+
+    local output = nil
+    if c.l.Events.Terminal[event] then
+        output = term
+    elseif c.l.Events.Monitor[event] then
+        output = peripheral.getName(args[1])
+    end
+    return output
+end
 
 -- Detect if two outputs are the same
 ---@param output1 table output
----@param output2 table output
+---@param output2? table output
 ---@return boolean
 local function isSameScreen(output1, output2)
     v.expect(1, output1, "table")
-    v.expect(2, output2, "table")
+    v.expect(2, output2, "table", "nil")
+
+    if output2 == nil then
+        return false
+    end
 
     local sameScreen = false
     if isTerm(output1) and isTerm(output2) then
@@ -123,7 +146,6 @@ local function isSameScreen(output1, output2)
         output2 = getFrameScreen(output2)
         sameScreen = output1.id == output2.id
     end
-
     return sameScreen
 end
 
@@ -237,6 +259,7 @@ h.getFrameScreen = getFrameScreen
 h.isFrameScreen = isFrameScreen
 h.isOutput = isOutput
 h.requireOutput = requireOutput
+h.getEventOutput = getEventOutput
 h.is = is
 h.isUIObject = isUIObject
 h.isSameScreen = isSameScreen

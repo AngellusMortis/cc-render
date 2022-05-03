@@ -203,17 +203,15 @@ function Screen:render()
 end
 
 ---Handles os event
----@param output cc.output
 ---@param event string Event name
 ---@vararg any
 ---@returns boolean event canceled
-function Screen:handle(output, event, ...)
+function Screen:handle(event, ...)
 ---@diagnostic disable-next-line: redefined-local
     local event, args = core.cleanEventArgs(event, ...)
-    v.expect(1, output, "table")
-    v.expect(2, event, "string")
-    ui.h.requireOutput(output)
+    v.expect(1, event, "string")
 
+    local output = ui.h.getEventOutput({event, unpack(args)})
     if not ui.c.l.Events.UI[event] and not ui.h.isSameScreen(self.output, output) then
         return false
     end

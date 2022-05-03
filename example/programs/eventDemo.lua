@@ -1,5 +1,4 @@
-local ghu = require(settings.get("ghu.base") .. "core/apis/ghu")
-ghu.initModulePaths()
+require(settings.get("ghu.base") .. "core/apis/ghu")
 
 local output
 if arg[1] ~= nil then
