@@ -2,7 +2,7 @@ local v = require("cc.expect")
 local pp = require("cc.pretty")
 
 local ghu = require(settings.get("ghu.base") .. "core/apis/ghu")
-local core = require("am.cc")
+local core = require("am.core")
 local textLib = require("am.text")
 local object = require("ext.object")
 
@@ -607,12 +607,11 @@ function Screen:handle(output, event, ...)
     if ui.l.Events.UI[event] then
         local obj, objOutput = self:get(args[1].objId, self.output)
         if obj ~= nil and objOutput ~= nil then
-            if ui.isSameScreen(objOutput, output) then
-                if not obj:handle(output, {event, table.unpack(args)}) then
-                    return true
-                end
+            if not obj:handle(objOutput, {event, table.unpack(args)}) then
+                return true
             end
         end
+        return false
     end
 
     -- only do one render call for whole group
@@ -903,7 +902,7 @@ function Text:handle(output, event, ...)
         end
         self.label = args[1].newLabel
         self:render(output)
-        return true3445
+        return true
     end
     return false
 end
@@ -1654,7 +1653,7 @@ function Button:init(anchor, label, opt)
     Button.super.init(self, anchor, opt)
 
     self.label = Text(opt.labelAnchor, label, {id=string.format("%s.label", self.id)})
-    self.disabled = false
+    self.disabled = opt.disabled
     self.activated = false
     self.activateOnTouch = opt.activateOnTouch
     self.activateOnLeftClick = opt.activateOnLeftClick
@@ -1667,12 +1666,9 @@ function Button:init(anchor, label, opt)
     return self
 end
 
-function Button:render(output)
-    local pos = self.anchor:getPos(output, self:getBaseWidth(), self:getBaseHeight())
-    local f = fs.open("debug.log", "a")
-    f.writeLine(string.format("%s %s %s %s %s", self.id, self.anchor.classname, pos.x, pos.y, output.getSize()))
-    f.close()
-    return Button.super.render(self, output)
+function Button:updateLabel(output, label)
+    local output = self:makeScreen(output)
+    self.label:update(output, label)
 end
 
 function Button:getBaseWidth(output)
@@ -1762,24 +1758,62 @@ function Button:onUp(output, event)
     self:deactivate(output)
 end
 
+function Button:get(id, output)
+    v.expect(1, id, "string")
+    v.expect(2, output, "table", "nil")
+
+    if id == self.label.id then
+        return self, output
+    end
+
+    if output ~= nil then
+        ui.requireOutput(output)
+        output = self:makeScreen(output)
+    end
+    return Frame.super.get(self, id, output)
+end
+
 function Button:handle(output, event, ...)
     local event, args = core.cleanEventArgs(event, ...)
     v.expect(1, output, "table")
     v.expect(2, event, "string")
     ui.requireOutput(output)
 
-    if ui.l.Events.UI[event] and args[1].objId == self.id then
+    if ui.l.Events.UI[event] then
         local eventData = args[1]
-        if event == ui.c.Events.frame_touch then
-            self:onTouch(output, eventData)
-        elseif event == ui.c.Events.frame_click then
-            self:onClick(output, eventData)
-        elseif event == ui.c.Events.frame_up then
-            self:onUp(output, eventData)
-        elseif event == ui.c.Events.button_activate then
-            self:onActivate(output, eventData)
-        elseif event == ui.c.Events.button_deactivate then
-            self:onDeactivate(output, eventData)
+        if eventData.objId == self.id then
+            if event == ui.c.Events.frame_touch then
+                self:onTouch(output, eventData)
+            elseif event == ui.c.Events.frame_click then
+                self:onClick(output, eventData)
+            elseif event == ui.c.Events.frame_up then
+                self:onUp(output, eventData)
+            elseif event == ui.c.Events.button_activate then
+                self:onActivate(output, eventData)
+            elseif event == ui.c.Events.button_deactivate then
+                self:onDeactivate(output, eventData)
+            end
+        elseif event == ui.c.Events.text_update then
+            if eventData.objId == self.label.id then
+                local oldLabel = eventData.oldLabel
+                local newLabel = eventData.newLabel
+                if #newLabel < #oldLabel then
+                    local oldBackgroundColor = self.backgroundColor
+                    local oldBorderColor = self.borderColor
+                    local oldFillColor = self.fillColor
+                    self.backgroundColor = output.getBackgroundColor()
+                    self.borderColor = output.getBackgroundColor()
+                    self.fillColor = output.getBackgroundColor()
+                    self.label.label = string.rep(" ", #oldLabel)
+                    self:render(output)
+                    self.backgroundColor = oldBackgroundColor
+                    self.borderColor = oldBorderColor
+                    self.fillColor = oldFillColor
+                end
+                self.label.label = newLabel
+                self:render(output)
+                return true
+            end
         end
         return self.bubble
     elseif event == "timer" then

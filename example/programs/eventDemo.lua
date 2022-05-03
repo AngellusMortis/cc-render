@@ -35,25 +35,27 @@ rightFrame:add(ui.Text(ui.a.Top(), "Event"))
 rightFrame:add(ui.Text(ui.a.Center(2), "", {id="eventText"}))
 rightFrame:add(ui.Text(ui.a.Center(3), "", {id="eventArgsText"}))
 counter = ui.Button(
-    ui.a.Center(8), string.format("Disabled (%d)", count), {fillColor=colors.blue, disabled=true}
+    ui.a.Center(8), string.format("Disabled (%d)", count), {
+        fillColor=colors.blue, disabled=true, id="disabledButton"
+    }
 )
 rightFrame:add(counter)
 button1 = ui.Button(
-    ui.a.Center(5, ui.c.Offset.Left), "Add", {fillColor=colors.green}
+    ui.a.Center(5, ui.c.Offset.Left), "Add", {fillColor=colors.green, id="addButton"}
 )
-button1:addActivateHandler(function(button, output)
+button1:addActivateHandler(function(button, objOutput)
     count = count + 1
-    counter:updateLabel(output, string.format("Disabled (%d)", count))
+    counter:updateLabel(objOutput, string.format("Disabled (%d)", count))
 end)
 rightFrame:add(button1)
 button2 = ui.Button(
     ui.a.Center(5, ui.c.Offset.Right), "Remove", {
-        fillColor=colors.yellow, textColor=colors.black
+        fillColor=colors.yellow, textColor=colors.black, id="removeButton"
     }
 )
-button2:addActivateHandler(function(button, output)
+button2:addActivateHandler(function(button, objOutput)
     count = math.max(0, count - 1)
-    counter:updateLabel(output, string.format("Disabled (%d)", count))
+    counter:updateLabel(objOutput, string.format("Disabled (%d)", count))
 end)
 rightFrame:add(button2)
 exitButton = ui.Button(ui.a.Bottom(), "Exit", {id="exitButton", fillColor=colors.red})
@@ -104,3 +106,5 @@ function eventLoop()
 end
 
 parallel.waitForAll(run, eventLoop)
+output.clear()
+output.setCursorPos(1, 1)

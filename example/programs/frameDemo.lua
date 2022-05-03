@@ -1,5 +1,4 @@
 local ghu = require(settings.get("ghu.base") .. "core/apis/ghu")
-ghu.initModulePaths()
 
 local ui = require("am.ui")
 s = ui.Screen(term, {textColor=colors.white, backgroundColor=colors.black})
