@@ -3,5 +3,7 @@
     "programs/frameDemo.lua": "155e2e78ac56f6231896657fbeab6e2783f3fefd8c8494310bca40f1c58a1453",
     "programs/eventDemo.lua": "89ae2bf6fc5430697d1c21527188b731263141337deb5b761e703376c42727d2"
   },
-  "dependencies": []
+  "dependencies": [
+    "AngellusMortis/cc-render"
+  ]
 }
