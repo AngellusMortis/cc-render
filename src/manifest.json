@@ -1,12 +1,12 @@
 {
   "files": {
-    "apis/am/text.lua": "6d4f1440492e8150da2d7c32bbc83ef91b9cd158fa6383cb6d7d6cc4ba5e1ff4",
-    "apis/am/ui.lua": "3903b0039663687b83330872b861798db65ecd5d61eecdee52ab51b6385e63df",
+    "apis/am/text.lua": "08324c8c7c5c633a2f8f28063b0a4b58ea41fffbdb7c9e2d9becea64be174d25",
+    "apis/am/ui.lua": "eb3b5bed914fd37b8b76fb1ea14ba25d0f9f76c16672f98b71cda20faa7ee8a3",
     "apis/am/ui/event.lua": "1fb65a0ba7bfc51a53c8212f20b2371cdcf0eab0de7829dce3997ae79ae2ba04",
-    "apis/am/ui/helpers.lua": "03d1c1340edd22cf49a07c32f6afacb566d2213bc14680a073b695e7721c9aa4",
-    "apis/am/ui/const.lua": "8c59bb568fe8effc154ca3899331bd0e7d7197856f75d482c4af3ea7134d191f",
-    "apis/am/ui/base.lua": "c65c29886f956bf7d8433527260cb4df59e641dd4e0692c99b7a4200fb005852",
-    "apis/am/ui/loop.lua": "67f07784968dfe3e81c4f8765b15d3f222484822ed124875706ddef47dbeb00d",
+    "apis/am/ui/helpers.lua": "6e41bdaba3672f333098a8273506aa469723fff109d4b419cd5a0b08bee62a56",
+    "apis/am/ui/const.lua": "9b4ecc76d7a101d9892d44f5cdedaa2a8b25faf311dfc9e910422e40785a4504",
+    "apis/am/ui/base.lua": "3e88f5a24a898fb0a99d0bd7b8141bfda378298814ade23a915f52286e29672b",
+    "apis/am/ui/loop.lua": "0f08c1a77667c0745d606e42a4e784bf9aa3697bdc61fe7658ae870f70cb05d7",
     "apis/am/ui/anchor.lua": "acd9c3ea3ee6e5c7e1d5bc8096ba7a1b5f3f0e4164704f09765101b2b9ed5844",
     "apis/ext/object.lua": "26eb3ab9e75582c41b57cfe83aa7dfcfbb285a0559ccffc2254a899975a769b3"
   },
