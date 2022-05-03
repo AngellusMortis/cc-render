@@ -49,7 +49,7 @@ function UIObject:validate(output)
 end
 
 ---Renders UI Object to output
----@param output table
+---@param output cc.output
 function UIObject:render(output)
     v.expect(1, output, "table", "nil")
     if output == nil then
@@ -60,9 +60,9 @@ function UIObject:render(output)
 end
 
 ---Handles os event
----@param output table
+---@param output cc.output
 ---@param event string Event name
----@param ...? any
+---@vararg any
 ---@returns boolean event canceled
 function UIObject:handle(output, event, ...)
 ---@diagnostic disable-next-line: redefined-local
@@ -195,6 +195,18 @@ function FrameScreen:ccCompat()
     end
     screen.blit = function(text, textColor, backgroundColor)
         return self:blit(text, textColor, backgroundColor)
+    end
+    screen.setPaletteColor = function(...)
+        return self:setPaletteColor(...)
+    end
+    screen.setPaletteColour = function(...)
+        return self:setPaletteColor(...)
+    end
+    screen.getPaletteColor = function(color)
+        return self:getPaletteColor(color)
+    end
+    screen.getPaletteColour = function(color)
+        return self:getPaletteColor(color)
     end
 
     return screen
@@ -382,4 +394,80 @@ function FrameScreen:scroll(y)
     error("Scrolling for Frame Not Supported")
 end
 
+---Sets palette color for FrameScreen output
+---@vararg number
+function FrameScreen:setPaletteColor(...)
+    -- TODO
+    self.output.setPaletteColor(...)
+end
+
+---Gets palette color for FrameScreen output
+---@param color number
+---@return number
+function FrameScreen:getPaletteColor(color)
+    self.output.getPaletteColor(color)
+end
+
 return b
+
+---@class cc.output
+---@field write fun(string)
+---@field scroll fun(string)
+---@field getCursorPos fun(): number, number
+---@field setCursorPos fun(number, number)
+---@field getCursorBlink fun(): boolean
+---@field setCursorBlink fun(boolean)
+---@field getSize fun(): number, number
+---@field clear fun()
+---@field clearLine fun()
+---@field getTextColor fun(): number
+---@field getTextColour fun(): number
+---@field setTextColor fun(number)
+---@field setTextColour fun(number)
+---@field getBackgroundColor fun(): number
+---@field getBackgroundColour fun(): number
+---@field setBackgroundColor fun(number)
+---@field setBackgroundColour fun(number)
+---@field isColor fun(): boolean
+---@field isColour fun(): boolean
+---@field blit fun(string, number, number)
+---@field getPaletteColor fun(number): number
+---@field getPaletteColour fun(number): number
+---@field setPaletteColor fun(...)
+---@field setPaletteColour fun(...)
+
+---@class am.ui.FrameScreenCompat:cc.output
+---@field _frameScreenRef am.ui.FrameScreen
+
+---@class cc.terminal:cc.output
+---@field nativePaletteColour fun(number): number
+---@field nativePaletteColor fun(number): number
+---@field redirect fun(cc.output)
+---@field current fun(): cc.output
+---@field native fun()
+
+---@class cc.monitor:cc.output
+---@field setTextScale fun(number)
+---@field getTextScale fun(): number
+
+---@class oslib
+---@field pullEvent fun(string?): string, ...
+---@field pullEventRaw fun(string?): string, ...
+---@field sleep fun(number): number
+---@field version fun(): string
+---@field run fun(table, string, ...): boolean
+---@field queueEvent fun(string, ...)
+---@field startTimer fun(number): number
+---@field cancelTimer fun(number)
+---@field setAlarm fun(number): number
+---@field cancelAlarm fun(number)
+---@field shutdown fun()
+---@field reboot fun()
+---@field getComputerID fun(): number
+---@field computerLabel fun(): string?
+---@field setComputerLabel fun(string)
+---@field clock fun(): number
+---@field time fun(string): number
+---@field day fun(string?): number
+---@field epoch fun(string?): number
+---@field date fun(string?, number?): any

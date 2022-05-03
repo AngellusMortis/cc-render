@@ -3,7 +3,7 @@ local v = require("cc.expect")
 local object = require("ext.object")
 
 ---Get actual FrameScreen object
----@param output table output
+---@param output am.ui.FrameScreenCompat|am.ui.FrameScreen output
 ---@return am.ui.FrameScreen
 local function getFrameScreen(output)
     v.expect(1, output, "table")
@@ -27,7 +27,7 @@ end
 
 
 ---Detect if output is terminal
----@param output table output
+---@param output cc.output|cc.terminal output
 ---@return boolean
 local function isTerm(output)
     v.expect(1, output, "table")
@@ -36,7 +36,7 @@ local function isTerm(output)
 end
 
 ---Detect if output is a monitor
----@param output table output
+---@param output cc.output output
 ---@return boolean
 local function isMonitor(output)
     v.expect(1, output, "table")
@@ -49,7 +49,7 @@ local function isMonitor(output)
 end
 
 ---Detect if output is a frame
----@param output table output
+---@param output cc.output output
 ---@return boolean
 local function isFrameScreen(output)
     v.expect(1, output, "table")
@@ -58,14 +58,14 @@ local function isFrameScreen(output)
 end
 
 -- Detect if output is an output
----@param output table output
+---@param output cc.output output
 ---@return boolean
 local function isOutput(output)
     return isTerm(output) or isMonitor(output) or isFrameScreen(output)
 end
 
 -- Raises error if not an output
----@param output table output
+---@param output cc.output output
 local function requireOutput(output)
     if not isOutput(output) then
         error("Not a terminal, monitor or frame")

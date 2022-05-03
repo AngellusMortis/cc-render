@@ -37,7 +37,7 @@ end
 
 ---Writes Color Encoded Text
 ---
----@param output table|string monitor or term to output to can be left out and will default to terminal
+---@param output cc.output|string monitor or term to output to can be left out and will default to terminal
 ---@param msg? string text to write to output
 ---@param x? number x position to output to, default to current x pos for output
 ---@param y? number y position to output to, default to current y pos for output
@@ -74,7 +74,7 @@ end
 
 ---Writes Color Encoded Text Centered
 ---
----@param output table|string monitor or term to output to can be left out and will default to terminal
+---@param output cc.output|string monitor or term to output to can be left out and will default to terminal
 ---@param msg? string text to write to output centered on line
 ---@param y? number y position to output to, default to current y pos for output
 ---@param clear? boolean clear the line before writing, default to true
@@ -85,7 +85,7 @@ function text.center(output, msg, y, clear)
         msg = output
         output = term
     end
-    ---@cast output table
+    ---@cast output cc.output
     v.expect(1, output, "table")
     v.expect(2, msg, "string")
     v.expect(3, y, "number", "nil")

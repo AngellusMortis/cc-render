@@ -1,6 +1,7 @@
 local ghu = require(settings.get("ghu.base") .. "core/apis/ghu")
 ghu.initModulePaths()
 
+local output
 if arg[1] ~= nil then
     if arg[1] == "term" then
         output = term
@@ -12,9 +13,10 @@ else
 end
 
 local ui = require("am.ui")
-local width, height = output.getSize()
+local width, _ = output.getSize()
 local count = 0
-s = ui.Screen(output, {textColor=colors.white, backgroundColor=colors.black})
+local loop = ui.UILoop()
+local s = ui.Screen(output, {textColor=colors.white, backgroundColor=colors.black})
 s:add(
     ui.Frame(ui.a.TopLeft(), {
             width=math.floor(width / 2),
@@ -24,7 +26,7 @@ s:add(
         }
     )
 )
-rightFrame = ui.Frame(ui.a.TopRight(), {
+local rightFrame = ui.Frame(ui.a.TopRight(), {
         width=math.floor(width / 2),
         fillVertical=true,
         id="rightFrame"
@@ -34,13 +36,13 @@ rightFrame.borderColor = nil
 rightFrame:add(ui.Text(ui.a.Top(), "Event"))
 rightFrame:add(ui.Text(ui.a.Center(2), "", {id="eventText"}))
 rightFrame:add(ui.Text(ui.a.Center(3), "", {id="eventArgsText"}))
-counter = ui.Button(
+local counter = ui.Button(
     ui.a.Center(8), string.format("Disabled (%d)", count), {
         fillColor=colors.blue, disabled=true, id="disabledButton"
     }
 )
 rightFrame:add(counter)
-button1 = ui.Button(
+local button1 = ui.Button(
     ui.a.Center(5, ui.c.Offset.Left), "Add", {fillColor=colors.green, id="addButton"}
 )
 button1:addActivateHandler(function(button, objOutput)
@@ -48,7 +50,7 @@ button1:addActivateHandler(function(button, objOutput)
     counter:updateLabel(objOutput, string.format("Disabled (%d)", count))
 end)
 rightFrame:add(button1)
-button2 = ui.Button(
+local button2 = ui.Button(
     ui.a.Center(5, ui.c.Offset.Right), "Remove", {
         fillColor=colors.yellow, textColor=colors.black, id="removeButton"
     }
@@ -58,41 +60,39 @@ button2:addActivateHandler(function(button, objOutput)
     counter:updateLabel(objOutput, string.format("Disabled (%d)", count))
 end)
 rightFrame:add(button2)
-exitButton = ui.Button(ui.a.Bottom(), "Exit", {id="exitButton", fillColor=colors.red})
+local exitButton = ui.Button(ui.a.Bottom(), "Exit", {id="exitButton", fillColor=colors.red})
 exitButton:addActivateHandler(function()
     loop:cancel()
 end)
 rightFrame:add(exitButton)
 s:add(rightFrame)
 
-loop = ui.UILoop()
-
-function run()
+local function run()
     s:render()
     loop:run(s)
 end
-function eventLoop()
+local function eventLoop()
     while loop.running do
         -- timeout timer
         local timer = os.startTimer(5)
 
         local event = {os.pullEvent()}
-        if ui.l.Events.UI[event[1]] then
+        if ui.c.l.Events.UI[event[1]] then
             local eventText, eventTextOutput = s:get("eventText")
             local eventArgsText, eventArgsTextOutput = s:get("eventArgsText")
-            if event[1] == ui.c.Events.loop_cancel then
+            if event[1] == ui.c.e.Events.loop_cancel then
                 eventText:update(eventTextOutput, event[1])
                 eventArgsText:update(eventArgsTextOutput, "")
-            elseif event[1] == ui.c.Events.button_activate then
+            elseif event[1] == ui.c.e.Events.button_activate then
                 eventText:update(eventTextOutput, event[1])
                 eventArgsText:update(
                     eventArgsTextOutput,
                     string.format("%s: %s", event[2].objId, event[2].touch)
                 )
-            elseif event[1] == ui.c.Events.button_deactivate then
+            elseif event[1] == ui.c.e.Events.button_deactivate then
                 eventText:update(eventTextOutput, event[1])
                 eventArgsText:update(eventArgsTextOutput, event[2].objId)
-            elseif event[1] ~= ui.c.Events.text_update then
+            elseif event[1] ~= ui.c.e.Events.text_update then
                 local frameEvent = event[2]
                 eventText:update(eventTextOutput, event[1])
                 eventArgsText:update(

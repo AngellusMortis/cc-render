@@ -1,14 +1,18 @@
 local c = {}
-c.Click = {}
-c.Click.Left = 1
-c.Click.Right = 2
-c.Click.Middle = 3
-
-c.Offset = {}
-c.Offset.Left = 1
-c.Offset.Right = 2
+---@type table<string, number>
+c.Click = {
+    Left=1,
+    Right=2,
+    Middle=3
+}
+---@type table<string, number>
+c.Offset = {
+    Left=1,
+    Right=2
+}
 
 c.e = {}
+---@type table<string, string>
 c.e.Events = {
     loop_cancel = "ui.loop_cancel",
     frame_touch = "ui.frame_touch",
@@ -21,7 +25,7 @@ c.e.Events = {
 
 c.l = {}
 c.l.Events = {}
-
+---@type table<string, boolean>
 c.l.Events.Terminal = {
     char=true,
     key=true,
@@ -32,10 +36,12 @@ c.l.Events.Terminal = {
     mouse_up=true,
     paste=true
 }
+---@type table<string, boolean>
 c.l.Events.Monitor = {
     monitor_resize=true,
     monitor_touch=true
 }
+---@type table<string, boolean>
 c.l.Events.UI = {
     ["ui.frame_touch"]=true,
     ["ui.frame_click"]=true,

@@ -104,7 +104,7 @@ function Group:render(output)
     if output == nil then
         output = term
     end
-    ---@cast output table
+    ---@cast output cc.output
     Group.super.render(self, output)
 
     local oldTextColor = output.getTextColor()
@@ -121,9 +121,9 @@ function Group:render(output)
 end
 
 ---Handles os event
----@param output table
+---@param output cc.output
 ---@param event string Event name
----@param ...? any
+---@vararg any
 ---@returns boolean event canceled
 function Group:handle(output, event, ...)
 ---@diagnostic disable-next-line: redefined-local
@@ -139,7 +139,7 @@ function Group:handle(output, event, ...)
     end
 
     for _, obj in pairs(self.i) do
-        if obj:handle(output, {event, table.unpack(args)}) then
+        if obj:handle(output, {event, unpack(args)}) then
             return true
         end
     end
@@ -203,9 +203,9 @@ function Screen:render()
 end
 
 ---Handles os event
----@param output table
+---@param output cc.output
 ---@param event string Event name
----@param ...? any
+---@vararg any
 ---@returns boolean event canceled
 function Screen:handle(output, event, ...)
 ---@diagnostic disable-next-line: redefined-local
@@ -221,7 +221,7 @@ function Screen:handle(output, event, ...)
     if ui.c.l.Events.UI[event] then
         local obj, objOutput = self:get(args[1].objId)
         if obj ~= nil and objOutput ~= nil then
-            if not obj:handle(objOutput, {event, table.unpack(args)}) then
+            if not obj:handle(objOutput, {event, unpack(args)}) then
                 return true
             end
         end
@@ -234,7 +234,7 @@ function Screen:handle(output, event, ...)
         return false
     end
     for _, obj in pairs(self.i) do
-        if obj:handle(output, {event, table.unpack(args)}) then
+        if obj:handle(output, {event, unpack(args)}) then
             return true
         end
     end
@@ -312,7 +312,7 @@ function Text:render(output)
     if output == nil then
         output = term
     end
-    ---@cast output table
+    ---@cast output cc.output
     Text.super.render(self, output)
 
     local oldTextColor = output.getTextColor()
@@ -503,7 +503,7 @@ function Frame:getBorderColor(output)
 end
 
 ---Gets text color for Frame
----@param output table
+---@param output cc.output
 function Frame:getTextColor(output)
     v.expect(1, output, "table", "nil")
     if output ~= nil then
@@ -528,7 +528,7 @@ function Frame:getBaseWidth()
 end
 
 ---Gets width for the Frame
----@param output table
+---@param output cc.output
 function Frame:getWidth(output, startX)
     v.expect(2, startX, "number", "nil")
     if startX == nil then
@@ -558,7 +558,7 @@ function Frame:getBaseHeight()
 end
 
 ---Gets height for the Frame
----@param output table
+---@param output cc.output
 function Frame:getHeight(output, startY)
     v.expect(2, startY, "number", "nil")
     local height = self:getBaseHeight()
@@ -570,12 +570,12 @@ function Frame:getHeight(output, startY)
 end
 
 ---Makes CC compatible FrameScreen for Frame
----@param output table
+---@param output cc.output
 ---@param pos? am.ui.b.ScreenPos
 ---@param width? number
 ---@param height? number
 ---@param doPadding? boolean
----@return table
+---@return cc.output
 function Frame:makeScreen(output, pos, width, height, doPadding)
     v.expect(1, output, "table")
     v.expect(2, pos, "table", "nil")
@@ -632,7 +632,7 @@ function Frame:render(output)
     if output == nil then
         output = term
     end
-    ---@cast output table
+    ---@cast output cc.output
     self:validate(output)
 
     local oldTextColor = output.getTextColor()
@@ -700,9 +700,9 @@ function Frame:within(output, x, y)
 end
 
 ---Handles os event
----@param output table
+---@param output cc.output
 ---@param event string Event name
----@param ...? any
+---@vararg any
 ---@returns boolean event canceled
 function Frame:handle(output, event, ...)
 ---@diagnostic disable-next-line: redefined-local
@@ -713,7 +713,7 @@ function Frame:handle(output, event, ...)
 
     local frameScreen = self:makeScreen(output)
     for _, obj in pairs(self.i) do
-        if obj:handle(frameScreen, {event, table.unpack(args)}) then
+        if obj:handle(frameScreen, {event, unpack(args)}) then
             return self.bubble
         end
     end
@@ -790,7 +790,7 @@ function Button:init(anchor, label, opt)
 end
 
 ---Updates label for Button
----@param output table
+---@param output cc.output
 ---@param label string
 function Button:updateLabel(output, label)
     output = self:makeScreen(output)
@@ -808,7 +808,7 @@ function Button:getBaseWidth()
 end
 
 ---Activates the button
----@param output table
+---@param output cc.output
 ---@param touch? boolean
 function Button:activate(output, touch)
     if self.disabled or self.activated then
@@ -822,7 +822,7 @@ function Button:activate(output, touch)
 end
 
 ---Deactivates the button
----@param output table
+---@param output cc.output
 function Button:deactivate(output)
     if not self.activated then
         return
@@ -848,7 +848,7 @@ end
 
 ---Handler for when button is activated
 ---Should not be overriden, use `addActivateHandler` instead
----@param output table
+---@param output cc.output
 ---@param event am.ui.e.ButtonActivateEvent
 function Button:onActivate(output, event)
     if self.disabled then
@@ -865,7 +865,7 @@ function Button:onActivate(output, event)
 end
 
 ---Handler for when button is deactivated
----@param output table
+---@param output cc.output
 ---@param event am.ui.e.ButtonDeactivateEvent
 function Button:onDeactivate(output, event)
     self.activated = false
@@ -873,7 +873,7 @@ function Button:onDeactivate(output, event)
 end
 
 ---Handler for when button is touched
----@param output table
+---@param output cc.output
 ---@param event am.ui.e.FrameTouchEvent
 function Button:onTouch(output, event)
     if self.disabled or self.activated or not self.activateOnTouch then
@@ -883,7 +883,7 @@ function Button:onTouch(output, event)
 end
 
 ---Handler for when button is clicked
----@param output table
+---@param output cc.output
 ---@param event am.ui.e.FrameClickEvent
 function Button:onClick(output, event)
     if self.disabled or self.activated then
@@ -900,7 +900,7 @@ function Button:onClick(output, event)
 end
 
 ---Handler for when frame click is depressed
----@param output table
+---@param output cc.output
 ---@param event am.ui.e.FrameDeactivateEvent
 function Button:onUp(output, event)
     if self.disabled or not self.activated then
@@ -929,9 +929,9 @@ function Button:get(id, output)
 end
 
 ---Handles os event
----@param output table
+---@param output cc.output
 ---@param event string Event name
----@param ...? any
+---@vararg any
 ---@returns boolean event canceled
 function Button:handle(output, event, ...)
 ---@diagnostic disable-next-line: redefined-local
@@ -984,7 +984,7 @@ function Button:handle(output, event, ...)
         end
     end
 
-    return Button.super.handle(self, output, {event, table.unpack(args)})
+    return Button.super.handle(self, output, {event, unpack(args)})
 end
 
 ---Gets fill color for Frame

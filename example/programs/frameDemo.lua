@@ -1,16 +1,16 @@
 local ghu = require(settings.get("ghu.base") .. "core/apis/ghu")
 
 local ui = require("am.ui")
-s = ui.Screen(term, {textColor=colors.white, backgroundColor=colors.black})
+local s = ui.Screen(term, {textColor=colors.white, backgroundColor=colors.black})
 
-function createFrame(anchor, border, padding, width, height)
+local function createFrame(anchor, border, padding, width, height)
     local frame = ui.Frame(anchor, {border=border, fillColor=colors.lightGray, width=width, height=height, padLeft=padding})
     frame:add(ui.Text(ui.a.Middle(), "T"))
 
     return frame
 end
 
-function frameDemo(border, padding, offset, width, height)
+local function frameDemo(border, padding, offset, width, height)
     if offset == nil then
         offset = 1
     end

@@ -1,7 +1,0 @@
-{
-  "files": {
-    "programs/frameDemo.lua": "605e60cb040ccf888d1e2483c283bb106f7515182edde38628aa5b59941875de",
-    "programs/eventDemo.lua": "2c3f2c70755b4d4d3a940c96e3bfa5bad12238751d46f913d92c8601b26d3112"
-  },
-  "dependencies": []
-}

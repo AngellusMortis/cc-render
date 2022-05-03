@@ -27,7 +27,7 @@ end
 
 ---Run UILoop handling events for given UI objs
 ---@param uiObj am.ui.b.UIObject
----@param ... am.ui.b.UIObject
+---@vararg am.ui.b.UIObject
 function UILoop:run(uiObj, ...)
     local objs = {uiObj, ...}
     self.running = true
@@ -70,7 +70,7 @@ function UILoop:run(uiObj, ...)
                     end
                 end
 
-                if output ~= nil and obj:handle(output, {event, table.unpack(args)})then
+                if output ~= nil and obj:handle(output, {event, unpack(args)})then
                     break
                 end
             end
