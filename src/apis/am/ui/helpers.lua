@@ -74,6 +74,15 @@ local function requireOutput(output)
     end
 end
 
+---Raises error if not an UIObject
+---@param obj table
+local function requireUIObject(obj)
+    v.expect(1, obj, "table")
+    if not is("am.ui.b.UIObject", obj) then
+        error("Not a UIObject")
+    end
+end
+
 ---Detect if obj is a UIObject
 ---@param obj table
 ---@return boolean
@@ -262,6 +271,7 @@ h.requireOutput = requireOutput
 h.getEventOutput = getEventOutput
 h.is = is
 h.isUIObject = isUIObject
+h.requireUIObject = requireUIObject
 h.isSameScreen = isSameScreen
 h.isUIScreen = isUIScreen
 h.isAnchor = isAnchor

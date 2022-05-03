@@ -35,11 +35,31 @@ end
 function main()
     -- do stuff
     -- update title
-    title, output = screen:get("titleText")
-    title:update(output, "New Title")
+    title = screen:get("titleText")
+    title:update("New Title")
 end
 
 parallel.waitForAll(runUILoop, main)
+```
+
+## Binding
+
+A UI Object is not directly bound to a computer screen. This makes it easier to move the UI object to another screen in the event of a redirect or just wanting to move it. You can bind a UI Object to an output for rendering. The `Screen` helper allows you to never have to really worry about binding and it essentially just becomes an "under the hood" thing.
+
+```lua
+require(settings.get("ghu.base") .. "core/apis/ghu")
+ui = require("am.ui")
+
+text = ui.Text(ui.a.Top(), "Title", {id="titleText"}
+
+-- manual binding
+boundText = text:bind(term)
+boundText:render()
+
+-- using screen
+screen = ui.Screen(term)
+screen:add(text)
+screen:render()
 ```
 
 ## Helpers

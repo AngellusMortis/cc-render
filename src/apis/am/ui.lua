@@ -14,6 +14,36 @@ ui.ScreenPos = b.ScreenPos
 ui.UIObject = b.UIObject
 ui.UILoop = require("am.ui.loop")
 
+---@class am.ui.BoundGroup:am.ui.b.UIBoundObject
+---@field obj am.ui.Group
+local BoundGroup = b.UIBoundObject:extend("am.ui.BoundGroup")
+b.BoundGroup = BoundGroup
+
+---Add UI obj to Group
+---@param obj am.ui.b.UIObject
+function BoundGroup:add(obj)
+    self.obj:add(obj)
+end
+
+---Recursively searches for UI Obj by id
+---@param id string
+---@return am.ui.b.UIObject?, table
+function BoundGroup:get(id)
+    return self.obj:get(id, self.output)
+end
+
+---Recursively searches for UI Obj by id and removes it
+---@param id string
+---@return boolean
+function BoundGroup:remove(id)
+    return self.obj:remove(id)
+end
+
+---Removes all UI objs
+function BoundGroup:reset()
+    self.obj:reset()
+end
+
 ---@class am.ui.Group:am.ui.b.UIObject
 local Group = b.UIObject:extend("am.ui.Group")
 ui.Group = Group
@@ -31,9 +61,8 @@ end
 function Group:add(obj)
     v.expect(1, obj, "table")
 
-    if not ui.h.isUIObject(obj) then
-        error("Not a valid UI obj")
-    elseif ui.h.isUIScreen(obj) then
+    ui.h.requireUIObject(obj)
+    if ui.h.isUIScreen(obj) then
         error("Cannot nest Screen UIs")
     end
 
@@ -42,8 +71,8 @@ end
 
 ---Recursively searches for UI Obj by id
 ---@param id string
----@param output? table
----@return am.ui.b.UIObject?, table
+---@param output? cc.output
+---@return am.ui.b.UIBoundObject?
 function Group:get(id, output)
     v.expect(1, id, "string")
     v.expect(2, output, "table", "nil")
@@ -52,18 +81,18 @@ function Group:get(id, output)
     end
 
     if self.i[id] ~= nil then
-        return self.i[id], output
+        return self.i[id]:bind(output)
     end
 
     for _, obj in pairs(self.i) do
         if obj:has(Group) then
-            local subObj, subOutput = obj:get(id, output)
+            local subObj = obj:get(id, output)
             if subObj ~= nil then
-                return subObj, subOutput or output
+                return subObj
             end
         end
     end
-    return nil, nil
+    return nil
 end
 
 ---Recursively searches for UI Obj by id and removes it
@@ -94,8 +123,15 @@ function Group:reset()
     self.i = {}
 end
 
+---Binds Group to an output
+---@param output cc.output
+---@returns am.ui.BoundGroup
+function Group:bind(output)
+    return BoundGroup(output, self)
+end
+
 ---Renders Group and all child UI objs
----@param output? table
+---@param output? cc.output
 function Group:render(output)
     if not self.visible then
         return
@@ -175,7 +211,7 @@ end
 
 ---Recursively searches for UI Obj by id
 ---@param id string
----@return am.ui.b.UIObject?, table
+---@return am.ui.b.UIBoundObject?
 function Screen:get(id)
     v.expect(1, id, "string")
     return Screen.super.get(self, id, self.output)
@@ -217,9 +253,9 @@ function Screen:handle(event, ...)
     end
 
     if ui.c.l.Events.UI[event] then
-        local obj, objOutput = self:get(args[1].objId)
-        if obj ~= nil and objOutput ~= nil then
-            if not obj:handle(objOutput, {event, unpack(args)}) then
+        local obj = self:get(args[1].objId)
+        if obj ~= nil then
+            if not obj:handle({event, unpack(args)}) then
                 return true
             end
         end
@@ -240,10 +276,26 @@ function Screen:handle(event, ...)
     return true
 end
 
+---Does nothing since screens are already bound
+---@param output cc.output
+---@returns am.ui.Screen
+function Screen:bind(output)
+    return self
+end
 
+---@class am.ui.BoundText:am.ui.b.UIBoundObject
+---@field obj am.ui.Text
+local BoundText = b.UIBoundObject:extend("am.ui.BoundText")
+b.BoundText = BoundText
 
+---Updates label text
+---@param label string
+function BoundText:update(label)
+    self.obj:update(self.output, label)
+end
 
-local Text = b.UIObject:extend("ui.Text")
+---@class am.ui.Text:am.ui.b.UIObject
+local Text = b.UIObject:extend("am.ui.Text")
 ui.Text = Text
 function Text:init(anchor, label, opt)
     opt = opt or {}
@@ -268,6 +320,8 @@ function Text:init(anchor, label, opt)
     return self
 end
 
+---Validates Frame Object
+---@param output? cc.output
 function Text:validate(output)
     Text.super.validate(self, output)
 
@@ -280,6 +334,11 @@ function Text:validate(output)
     end
 end
 
+---Handles os event
+---@param output cc.output
+---@param event string Event name
+---@vararg any
+---@returns boolean event canceled
 function Text:handle(output, event, ...)
 ---@diagnostic disable-next-line: redefined-local
     local event, args = core.cleanEventArgs(event, ...)
@@ -301,6 +360,8 @@ function Text:handle(output, event, ...)
     return false
 end
 
+---Renders Group and all child UI objs
+---@param output? cc.output
 function Text:render(output)
     if not self.visible then
         return
@@ -332,6 +393,9 @@ function Text:render(output)
     output.setCursorPos(oldX, oldY)
 end
 
+---Updates label text to output
+---@param output cc.output
+---@param label string
 function Text:update(output, label)
     v.expect(1, output, "table")
     v.expect(2, label, "string")
@@ -342,6 +406,85 @@ function Text:update(output, label)
         self.label = label
         os.queueEvent(event.name, event)
     end
+end
+
+---Binds Text to an output
+---@param output cc.output
+---@returns am.ui.BoundText
+function Text:bind(output)
+    return BoundText(output, self)
+end
+
+---@class am.ui.BoundFrame:am.ui.BoundGroup
+---@field obj am.ui.Frame
+local BoundFrame = BoundGroup:extend("am.ui.BoundFrame")
+b.BoundFrame = BoundFrame
+
+---Gets background color for Frame
+---@returns number
+function BoundFrame:getBackgroundColor()
+    return self.obj:getBackgroundColor(self.output)
+end
+
+---Gets fill color for Frame
+---@returns number
+function BoundFrame:getFillColor()
+    return self.obj:getFillColor(self.output)
+end
+
+---Gets border color for Frame
+---@returns number
+function BoundFrame:getBorderColor()
+    return self.obj:getBorderColor(self.output)
+end
+
+---Gets text color for Frame
+---@returns number
+function BoundFrame:getTextColor()
+    return self.obj:getTextColor(self.output)
+end
+
+---Gets width for the Frame without auto filling
+---@returns number
+function BoundFrame:getBaseWidth()
+    return self.obj:getBaseWidth()
+end
+
+---Gets width for the Frame
+---@param startX? number
+function BoundFrame:getWidth(startX)
+    return self.obj:getWidth(self.output, startX)
+end
+
+---Gets height for the Frame without auto filling
+---@returns number
+function BoundFrame:getBaseHeight()
+    return self.obj:getBaseHeight()
+end
+
+---Gets height for the Frame
+---@param startY? number
+---@returns number
+function BoundFrame:getHeight(startY)
+    return self.obj:getHeight(self.output, startY)
+end
+
+---Makes CC compatible FrameScreen for Frame
+---@param pos? am.ui.b.ScreenPos
+---@param width? number
+---@param height? number
+---@param doPadding? boolean
+---@return am.ui.FrameScreenCompat
+function BoundFrame:makeScreen(pos, width, height, doPadding)
+    return self.obj:makeScreen(self.output, pos, width, height, doPadding)
+end
+
+---Checks if coords on phyiscal CC screen is is within Frame
+---@param x number
+---@param y number
+---@return boolean
+function BoundFrame:within(x, y)
+    return self.obj:within(self.output, x, y)
 end
 
 ---@class am.ui.Frame:am.ui.Group
@@ -418,8 +561,8 @@ end
 
 ---Recursively searches for UI Obj by id
 ---@param id string
----@param output? table
----@return am.ui.b.UIObject?, table
+---@param output? cc.output
+---@return am.ui.b.UIObject?
 function Frame:get(id, output)
     v.expect(1, id, "string")
     v.expect(2, output, "table", "nil")
@@ -431,7 +574,7 @@ function Frame:get(id, output)
 end
 
 ---Validates Frame Object
----@param output? table
+---@param output? cc.output
 function Frame:validate(output)
     v.field(self, "border", "number")
     v.range(self.border, 0, 3)
@@ -473,7 +616,8 @@ function Frame:validate(output)
 end
 
 ---Gets background color for Frame
----@param output? table
+---@param output? cc.output
+---@returns number
 function Frame:getBackgroundColor(output)
     v.expect(1, output, "table", "nil")
     if output ~= nil then
@@ -484,13 +628,15 @@ function Frame:getBackgroundColor(output)
 end
 
 ---Gets fill color for Frame
----@param output? table
+---@param output? cc.output
+---@returns number
 function Frame:getFillColor(output)
     return self.fillColor
 end
 
 ---Gets border color for Frame
----@param output? table
+---@param output? cc.output
+---@returns number
 function Frame:getBorderColor(output)
     v.expect(1, output, "table", "nil")
     if output ~= nil then
@@ -502,6 +648,7 @@ end
 
 ---Gets text color for Frame
 ---@param output cc.output
+---@returns number
 function Frame:getTextColor(output)
     v.expect(1, output, "table", "nil")
     if output ~= nil then
@@ -512,6 +659,7 @@ function Frame:getTextColor(output)
 end
 
 ---Gets width for the Frame without auto filling
+---@returns number
 function Frame:getBaseWidth()
     local width = self.width
     if width ~= nil then
@@ -527,6 +675,8 @@ end
 
 ---Gets width for the Frame
 ---@param output cc.output
+---@param startX? number
+---@returns number
 function Frame:getWidth(output, startX)
     v.expect(2, startX, "number", "nil")
     if startX == nil then
@@ -542,6 +692,7 @@ function Frame:getWidth(output, startX)
 end
 
 ---Gets height for the Frame without auto filling
+---@returns number
 function Frame:getBaseHeight()
     local height = self.height
     if height ~= nil then
@@ -557,6 +708,8 @@ end
 
 ---Gets height for the Frame
 ---@param output cc.output
+---@param startY? number
+---@returns number
 function Frame:getHeight(output, startY)
     v.expect(2, startY, "number", "nil")
     local height = self:getBaseHeight()
@@ -573,7 +726,7 @@ end
 ---@param width? number
 ---@param height? number
 ---@param doPadding? boolean
----@return cc.output
+---@return am.ui.FrameScreenCompat
 function Frame:makeScreen(output, pos, width, height, doPadding)
     v.expect(1, output, "table")
     v.expect(2, pos, "table", "nil")
@@ -620,7 +773,7 @@ function Frame:makeScreen(output, pos, width, height, doPadding)
 end
 
 ---Renders Group and all child UI objs
----@param output? table
+---@param output? cc.output
 function Frame:render(output)
     if not self.visible then
         return
@@ -671,6 +824,9 @@ function Frame:render(output)
 end
 
 ---Checks if coords on phyiscal CC screen is is within Frame
+---@param x number
+---@param y number
+---@return boolean
 function Frame:within(output, x, y)
     if not self.visible then
         return false
@@ -737,6 +893,73 @@ function Frame:handle(output, event, ...)
     return false
 end
 
+---Binds Frame to an output
+---@param output cc.output
+---@returns am.ui.BoundFrame
+function Frame:bind(output)
+    return BoundFrame(output, self)
+end
+
+---@class am.ui.BoundButton:am.ui.BoundFrame
+---@field obj am.ui.Button
+local BoundButton = BoundFrame:extend("am.ui.BoundButton")
+b.BoundButton = BoundButton
+
+---Updates label text
+---@param label string
+function BoundButton:updateLabel(label)
+    self.obj:updateLabel(self.output, label)
+end
+
+---Activates the button
+---@param touch? boolean
+function BoundButton:activate(touch)
+    self.obj:activate(self.output, touch)
+end
+
+---Deactivates the button
+function BoundButton:deactivate()
+    self.obj:deactivate(self.output)
+end
+
+---Adds event handler for when button is acitvated
+---@param handler fun(button:am.ui.Button, output:table, event:am.ui.e.ButtonActivateEvent)
+---@return fun() Unsubcribe method
+function BoundButton:addActivateHandler(handler)
+    return self.obj:addActivateHandler(handler)
+end
+
+---Handler for when button is activated
+---Should not be overriden, use `addActivateHandler` instead
+---@param event am.ui.e.ButtonActivateEvent
+function BoundButton:onActivate(event)
+    self.obj:onActivate(self.output, event)
+end
+
+---Handler for when button is deactivated
+---@param event am.ui.e.ButtonDeactivateEvent
+function BoundButton:onDeactivate(event)
+    self.obj:onDeactivate(self.output, event)
+end
+
+---Handler for when button is touched
+---@param event am.ui.e.FrameTouchEvent
+function BoundButton:onTouch(event)
+    self.obj:onTouch(self.output, event)
+end
+
+---Handler for when button is clicked
+---@param event am.ui.e.FrameClickEvent
+function BoundButton:onClick(event)
+    self.obj:onClick(self.output, event)
+end
+
+---Handler for when frame click is depressed
+---@param event am.ui.e.FrameDeactivateEvent
+function BoundButton:onUp(event)
+    self.obj:onUp(self.output, event)
+end
+
 ---@class am.ui.Button:am.ui.Frame
 local Button = Frame:extend("am.ui.Button")
 ui.Button = Button
@@ -796,6 +1019,7 @@ function Button:updateLabel(output, label)
 end
 
 ---Gets width for the Frame without auto filling, takes into account of label
+---@return number
 function Button:getBaseWidth()
     local width = Button.super.getBaseWidth(self)
     if self.width ~= nil then
@@ -803,6 +1027,36 @@ function Button:getBaseWidth()
     end
 
     return width + #self.label.label - 1
+end
+
+---Gets fill color for Frame
+---@param output? cc.output
+---@return number
+function Button:getFillColor(output)
+    v.expect(1, output, "table", "nil")
+    if output ~= nil and self.activated then
+        ui.h.requireOutput(output)
+        ui.h.getColor(self.borderColor, output.getBackgroundColor())
+    end
+    if self.activated then
+        return self.borderColor
+    end
+    return self.fillColor
+end
+
+---Gets border color for Frame
+---@param output? cc.output
+---@return number
+function Button:getBorderColor(output)
+    v.expect(1, output, "table", "nil")
+    if output ~= nil and not self.activated then
+        ui.h.requireOutput(output)
+        ui.h.getColor(self.borderColor, output.getBackgroundColor())
+    end
+    if self.activated then
+        return self.fillColor
+    end
+    return self.borderColor
 end
 
 ---Activates the button
@@ -909,14 +1163,14 @@ end
 
 ---Recursively searches for UI Obj by id
 ---@param id string
----@param output? table
----@return am.ui.b.UIObject?, table
+---@param output? cc.output
+---@return am.ui.b.UIObject?
 function Button:get(id, output)
     v.expect(1, id, "string")
     v.expect(2, output, "table", "nil")
 
     if id == self.label.id then
-        return self, output
+        return self:bind(output)
     end
 
     if output ~= nil then
@@ -985,32 +1239,11 @@ function Button:handle(output, event, ...)
     return Button.super.handle(self, output, {event, unpack(args)})
 end
 
----Gets fill color for Frame
----@param output? table
-function Button:getFillColor(output)
-    v.expect(1, output, "table", "nil")
-    if output ~= nil and self.activated then
-        ui.h.requireOutput(output)
-        ui.h.getColor(self.borderColor, output.getBackgroundColor())
-    end
-    if self.activated then
-        return self.borderColor
-    end
-    return self.fillColor
-end
-
----Gets border color for Frame
----@param output? table
-function Button:getBorderColor(output)
-    v.expect(1, output, "table", "nil")
-    if output ~= nil and not self.activated then
-        ui.h.requireOutput(output)
-        ui.h.getColor(self.borderColor, output.getBackgroundColor())
-    end
-    if self.activated then
-        return self.fillColor
-    end
-    return self.borderColor
+---Binds Button to an output
+---@param output cc.output
+---@returns am.ui.BoundButton
+function Button:bind(output)
+    return BoundButton(output, self)
 end
 
 return ui

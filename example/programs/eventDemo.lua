@@ -77,25 +77,21 @@ local function eventLoop()
 
         local event = {os.pullEvent()}
         if ui.c.l.Events.UI[event[1]] then
-            local eventText, eventTextOutput = s:get("eventText")
-            local eventArgsText, eventArgsTextOutput = s:get("eventArgsText")
+            local eventText = s:get("eventText")
+            local eventArgsText = s:get("eventArgsText")
             if event[1] == ui.c.e.Events.loop_cancel then
-                eventText:update(eventTextOutput, event[1])
-                eventArgsText:update(eventArgsTextOutput, "")
+                eventText:update(event[1])
+                eventArgsText:update("")
             elseif event[1] == ui.c.e.Events.button_activate then
-                eventText:update(eventTextOutput, event[1])
-                eventArgsText:update(
-                    eventArgsTextOutput,
-                    string.format("%s: %s", event[2].objId, event[2].touch)
-                )
+                eventText:update(event[1])
+                eventArgsText:update(string.format("%s: %s", event[2].objId, event[2].touch))
             elseif event[1] == ui.c.e.Events.button_deactivate then
-                eventText:update(eventTextOutput, event[1])
-                eventArgsText:update(eventArgsTextOutput, event[2].objId)
+                eventText:update(event[1])
+                eventArgsText:update(event[2].objId)
             elseif event[1] ~= ui.c.e.Events.text_update then
                 local frameEvent = event[2]
-                eventText:update(eventTextOutput, event[1])
+                eventText:update(event[1])
                 eventArgsText:update(
-                    eventArgsTextOutput,
                     string.format("%s: %d, %d", frameEvent.objId, frameEvent.x, frameEvent.y)
                 )
             end

@@ -19,6 +19,45 @@ function BaseObject:init()
     return self
 end
 
+---@class am.ui.b.UIBoundObject:am.ui.b.BaseObject
+---@field output cc.output
+---@field obj am.ui.b.UIObject
+local UIBoundObject = BaseObject:extend("am.ui.b.UIBoundObject")
+b.UIBoundObject = UIBoundObject
+function UIBoundObject:init(output, obj)
+    v.expect(1, output, "table")
+    v.expect(2, obj, "table")
+    h.requireOutput(output)
+    h.requireUIObject(obj)
+    UIBoundObject.super.init(self)
+
+    self.output = output
+    self.obj = obj
+    return self
+end
+
+---Validates UI Object
+function UIBoundObject:validate()
+    self.obj:validate(self.output)
+end
+
+---Renders UI Object to output
+function UIBoundObject:render()
+    self.obj:render(self.output)
+end
+
+---Handles os event
+---@param event string Event name
+---@vararg any
+---@returns boolean event canceled
+function UIBoundObject:handle(event, ...)
+---@diagnostic disable-next-line: redefined-local
+    local event, args = core.cleanEventArgs(event, ...)
+    v.expect(1, event, "string")
+
+    return self.obj:handle(self.output, {event, unpack(args)})
+end
+
 ---@class am.ui.b.UIObject:am.ui.b.BaseObject
 ---@field id string
 ---@field visible boolean
@@ -44,7 +83,7 @@ function UIObject:init(opt)
 end
 
 ---Validates UI Object
----@param output? table
+---@param output? cc.output
 function UIObject:validate(output)
 end
 
@@ -76,6 +115,13 @@ function UIObject:handle(output, event, ...)
     end
 
     return false
+end
+
+---Binds UIObject to an output
+---@param output cc.output
+---@returns am.ui.b.UIBoundObject
+function UIObject:bind(output)
+    return UIBoundObject(output, self)
 end
 
 ---@class am.ui.b.ScreenPos:am.ui.b.BaseObject

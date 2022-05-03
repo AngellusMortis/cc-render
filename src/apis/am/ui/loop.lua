@@ -50,9 +50,9 @@ function UILoop:run(uiObj, ...)
             else
                 for _, obj in ipairs(objs) do
                     if h.isUIScreen(obj) then
-                        local frame, subOutput = obj:get(eventObj.outputId, obj.output)
-                        if frame ~= nil and subOutput ~= nil then
-                            output = frame:makeScreen(subOutput)
+                        local frame = obj:get(eventObj.outputId)
+                        if frame ~= nil then
+                            output = frame:makeScreen()
                             break
                         end
                     end
