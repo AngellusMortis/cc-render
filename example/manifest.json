@@ -1,7 +1,7 @@
 {
   "files": {
     "programs/frameDemo.lua": "1c751538b889a0e7632f702962f63527848fcb42a0f99eb671150c1769962f33",
-    "programs/eventDemo.lua": "bd08b2a640d58c647c2eb8f63133628b7680f5315c23b4e7e3eea9e62865da3d"
+    "programs/eventDemo.lua": "6cf561eadbdcc8ed8728a15d53e184c81e21994efe7ce34fb04b915a6a6c3d08"
   },
   "dependencies": [
     "AngellusMortis/cc-render"
