@@ -1,8 +1,8 @@
 {
   "files": {
     "programs/frameDemo.lua": "1c751538b889a0e7632f702962f63527848fcb42a0f99eb671150c1769962f33",
-    "programs/eventDemo.lua": "6cf561eadbdcc8ed8728a15d53e184c81e21994efe7ce34fb04b915a6a6c3d08",
-    "programs/progressDemo.lua": "fe8751fc550c19be05c720af7e15e5ea3c33f6be4aca0f3a40417090b8ab9aa0"
+    "programs/eventDemo.lua": "92df75bb51c13056c250cc1b572d410513b0d7690cb502789dc960b32297807d",
+    "programs/progressDemo.lua": "5d6d8c09d0bdf6ed87546d115e4883b0d387069698217ed1f45609800f392976"
   },
   "dependencies": [
     "AngellusMortis/cc-render"
