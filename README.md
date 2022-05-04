@@ -8,6 +8,7 @@ Some things that makes my library stand out a bit:
 * Full OOP
 * Virtual screens/outputs (Frames)
 * Positional anchoring
+* Seemly handles both terminal and monitors
 
 ----
 
