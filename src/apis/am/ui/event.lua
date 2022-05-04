@@ -78,6 +78,50 @@ function TextUpdateEvent:init(output, objId, oldLabel, newLabel)
     return self
 end
 
+---@class am.ui.e.ProgressBarLabelUpdateEvent:am.ui.e.UIEvent
+---@field oldLabel string|nil
+---@field newLabel string|nil
+---@field oldShowProgress boolean|nil
+---@field newShowProgress boolean|nil
+---@field oldShowPercent boolean|nil
+---@field newShowPercent boolean|nil
+local ProgressBarLabelUpdateEvent = UIEvent:extend("am.ui.e.ProgressBarLabelUpdateEvent")
+e.ProgressBarLabelUpdateEvent = ProgressBarLabelUpdateEvent
+function ProgressBarLabelUpdateEvent:init(output, objId)
+    v.expect(1, output, "table")
+    v.expect(2, objId, "string")
+    h.requireOutput(output)
+    ProgressBarLabelUpdateEvent.super.init(
+        self, c.e.Events.progress_label_update, output, objId
+    )
+
+    self.oldLabel = nil
+    self.newLabel = nil
+    self.oldShowProgress = nil
+    self.newShowProgress = nil
+    self.oldShowPercent = nil
+    self.newShowPercent = nil
+    return self
+end
+
+---@class am.ui.e.ProgressBarUpdateEvent:am.ui.e.UIEvent
+---@field oldCurrent number
+---@field newCurrent number
+local ProgressBarUpdateEvent = UIEvent:extend("am.ui.e.ProgressBarUpdateEvent")
+e.ProgressBarUpdateEvent = ProgressBarUpdateEvent
+function ProgressBarUpdateEvent:init(output, objId, oldCurrent, newCurrent)
+    v.expect(1, output, "table")
+    v.expect(2, objId, "string")
+    h.requireOutput(output)
+    ProgressBarLabelUpdateEvent.super.init(
+        self, c.e.Events.progress_update, output, objId
+    )
+
+    self.oldCurrent = nil
+    self.newCurrent = newCurrent
+    return self
+end
+
 ---@class am.ui.e.ButtonActivateEvent:am.ui.e.UIEvent
 ---@field touch boolean
 local ButtonActivateEvent = UIEvent:extend("am.ui.e.ButtonActivateEvent")

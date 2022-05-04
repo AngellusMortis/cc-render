@@ -16,6 +16,14 @@ local width, _ = output.getSize()
 local count = 0
 local loop = ui.UILoop()
 local s = ui.Screen(output, {textColor=colors.white, backgroundColor=colors.black})
+s:add(ui.ProgressBar(ui.a.TopLeft(), {
+    width=math.floor(width / 2),
+    progressVertical=true,
+    fillColor=colors.lightGray,
+    fillHorizontal=false,
+    labelAnchor=ui.a.Bottom(),
+    id="leftProgressBar"
+}))
 s:add(
     ui.Frame(ui.a.TopLeft(), {
             width=math.floor(width / 2),
@@ -45,8 +53,10 @@ local button1 = ui.Button(
     ui.a.Center(5, ui.c.Offset.Left), "Add", {fillColor=colors.green, id="addButton"}
 )
 button1:addActivateHandler(function(button, objOutput)
-    count = count + 1
+    count = math.min(100, count + 1)
     counter:updateLabel(objOutput, string.format("Disabled (%d)", count))
+    local progressBar = s:get("leftProgressBar")
+    progressBar:update(count)
 end)
 rightFrame:add(button1)
 local button2 = ui.Button(
@@ -57,6 +67,8 @@ local button2 = ui.Button(
 button2:addActivateHandler(function(button, objOutput)
     count = math.max(0, count - 1)
     counter:updateLabel(objOutput, string.format("Disabled (%d)", count))
+    local progressBar = s:get("leftProgressBar")
+    progressBar:update(count)
 end)
 rightFrame:add(button2)
 local exitButton = ui.Button(ui.a.Bottom(), "Exit", {id="exitButton", fillColor=colors.red})
@@ -88,7 +100,7 @@ local function eventLoop()
             elseif event[1] == ui.c.e.Events.button_deactivate then
                 eventText:update(event[1])
                 eventArgsText:update(event[2].objId)
-            elseif event[1] ~= ui.c.e.Events.text_update then
+            elseif event[1] ~= ui.c.e.Events.text_update and event[1] ~= ui.c.e.Events.progress_update then
                 local frameEvent = event[2]
                 eventText:update(event[1])
                 eventArgsText:update(

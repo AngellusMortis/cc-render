@@ -780,7 +780,7 @@ function Frame:handle(output, event, ...)
     local frameScreen = self:makeScreen(output)
     for _, obj in pairs(self.i) do
         if obj:handle(frameScreen, {event, unpack(args)}) then
-            return self.bubble
+            return not self.bubble
         end
     end
 
@@ -799,7 +799,7 @@ function Frame:handle(output, event, ...)
             if frameEvent ~= nil then
                 os.queueEvent(frameEvent.name, frameEvent)
             end
-            return self.bubble
+            return not self.bubble
         end
     end
     return false
@@ -1089,7 +1089,7 @@ function Button:handle(output, event, ...)
                 return true
             end
         end
-        return self.bubble
+        return not self.bubble
     elseif event == "timer" then
         if args[1] == self.touchTimer then
             self.touchTimer = nil
@@ -1113,7 +1113,6 @@ end
 ---@field fillFrame am.ui.Frame
 ---@field fillLabel am.ui.Text
 ---@field current number
----@field displayCurrent number
 ---@field displayTotal number
 ---@field total number
 ---@field progressColor number
@@ -1136,6 +1135,7 @@ function ProgressBar:init(anchor, opt)
     v.field(opt, "progressVertical", "boolean", "nil")
     v.field(opt, "showProgress", "boolean", "nil")
     v.field(opt, "showPercent", "boolean", "nil")
+    v.field(opt, "bubble", "boolean", "nil")
     if opt.label == nil then
         opt.label = ""
     end
@@ -1171,16 +1171,13 @@ function ProgressBar:init(anchor, opt)
             opt.fillVertical = true
         end
     end
+    if opt.bubble == nil then
+        opt.bubble = true
+    end
     Button.super.init(self, anchor, opt)
 
     self.baseLabel = opt.label
-    self.label = Text(opt.labelAnchor, "", {id=string.format("%s.label", self.id)})
-    self.fillFrame = Frame(
-        ui.a.BottomLeft(), {id=string.format("%s.fill", self.id), fillVertical=true, border=0}
-    )
-    self.fillLabel = Text(ui.a.Anchor(1, 1), "", {id=string.format("%s.fillLabel", self.id)})
     self.current = opt.current
-    self.displayCurrent = nil
     self.displayTotal = opt.displayTotal
     self.total = opt.total
     self.progressColor = opt.progressColor
@@ -1188,6 +1185,12 @@ function ProgressBar:init(anchor, opt)
     self.progressVertical = opt.progressVertical
     self.showProgress = opt.showProgress
     self.showPercent = opt.showPercent
+
+    self.label = Text(opt.labelAnchor, self:getLabelText(), {id=string.format("%s.label", self.id)})
+    self.fillFrame = Frame(
+        ui.a.BottomLeft(), {id=string.format("%s.fill", self.id), fillVertical=true, border=0}
+    )
+    self.fillLabel = Text(ui.a.Anchor(1, 1), self:getLabelText(), {id=string.format("%s.fillLabel", self.id)})
     self:add(self.label)
     self:validate()
     return self
@@ -1210,11 +1213,7 @@ function ProgressBar:validate(output)
     v.field(self, "total", "number")
     v.range(self.total, math.floor(self.current))
 
-    v.field(self, "displayCurrent", "number", "nil")
     v.field(self, "displayTotal", "number", "nil")
-    if self.displayCurrent ~= nil and self.displayTotal ~= nil then
-        v.range(self.displayTotal, math.floor(self.displayCurrent))
-    end
 
     v.field(self, "progressColor", "number")
     v.range(self.progressColor, 1)
@@ -1264,11 +1263,11 @@ function ProgressBar:getLabelText()
         label = label .. string.format(" %d%%", percent * 100)
     end
     if self.showProgress then
-        local displayCurrent = self.displayCurrent
-        local displayTotal = self.displayTotal
-        if displayCurrent == nil or displayTotal == nil then
-            displayCurrent = self.current
-            displayTotal = self.total
+        local displayCurrent = self.current
+        local displayTotal = self.total
+        if self.displayTotal ~= nil then
+            displayCurrent = math.floor(percent * self.displayTotal)
+            displayTotal = self.displayTotal
         end
         label = label .. string.format(" [%d/%d]", displayCurrent, displayTotal)
     end
@@ -1288,19 +1287,20 @@ function ProgressBar:render(output)
     end
     ---@cast output cc.output
 
+    local screen = self:makeScreen(output)
     local oldTextColor = output.getTextColor()
     local oldBackgroundColor = output.getBackgroundColor()
     local oldX, oldY = output.getCursorPos()
-
-    local screen = self:makeScreen(output)
-    local screenWidth, screenHeight = screen.getSize()
-    local current = math.min(self.current, self.total)
-    local percent = current / self.total
     local label = self:getLabelText()
-    local labelPos = self.label.anchor:getPos(screen, #label, 1)
     self.label.label = label
+    self.label.textColor = self:getTextColor(output)
     ProgressBar.super.render(self, output)
 
+    local current = math.min(self.current, self.total)
+    local percent = current / self.total
+
+    local screenWidth, screenHeight = screen.getSize()
+    local labelPos = self.label.anchor:getPos(screen, #label, 1)
     local fillAmount
     if self.progressVertical then
         fillAmount = math.floor(screenHeight * percent)
@@ -1344,6 +1344,98 @@ function ProgressBar:render(output)
     output.setTextColor(oldTextColor)
     output.setBackgroundColor(oldBackgroundColor)
     output.setCursorPos(oldX, oldY)
+end
+
+---Updates label for ProgressBar
+---@param output cc.output
+---@param label? string
+---@param showProgress? boolean
+---@param showPercent? boolean
+function ProgressBar:updateLabel(output, label, showProgress, showPercent)
+    v.expect(1, output, "table")
+    v.expect(2, label, "string", "nil")
+    v.expect(3, showProgress, "boolean", "nil")
+    v.expect(4, showPercent, "boolean", "nil")
+    ui.h.requireOutput(output)
+
+    local labelChanged = label ~= nil and self.baseLabel ~= label
+    local progressChanged = showProgress ~= nil and self.showProgress ~= showProgress
+    local percentChanged = showPercent ~= nil and self.showPercent ~= showPercent
+
+    if not (labelChanged or progressChanged or percentChanged) then
+        return
+    end
+
+    local event = ui.e.ProgressBarLabelUpdateEvent(output, self.id)
+    if labelChanged then
+        event.oldLabel = self.baseLabel
+        event.newLabel = label
+        self.baseLabel = label
+    end
+    if progressChanged then
+        event.oldShowProgress = self.showProgress
+        event.newShowProgress = showProgress
+        self.showProgress = showProgress
+    end
+    if percentChanged then
+        event.oldShowPercent = self.showPercent
+        event.newShowPercent = showPercent
+        self.showPercent = showPercent
+    end
+
+    -- Event is used instead of re-rendering directly to allow parent objects
+    --  to capture the update and handle it themselves
+    os.queueEvent(event.name, event)
+end
+
+---Updates progress for ProgressBar
+---@param output cc.output
+---@param current number
+function ProgressBar:update(output, current)
+    v.expect(1, output, "table")
+    v.expect(2, current, "number")
+    ui.h.requireOutput(output)
+
+    current = math.min(self.total, math.max(0, current))
+    if self.current == current then
+        return
+    end
+
+    -- Event is used instead of re-rendering directly to allow parent objects
+    --  to capture the update and handle it themselves
+    local event = ui.e.ProgressBarUpdateEvent(output, self.id, self.current, current)
+    self.current = current
+    os.queueEvent(event.name, event)
+end
+
+---Handles os event
+---@param output cc.output
+---@param event string Event name
+---@vararg any
+---@returns boolean event canceled
+function ProgressBar:handle(output, event, ...)
+---@diagnostic disable-next-line: redefined-local
+    local event, args = core.cleanEventArgs(event, ...)
+    v.expect(1, output, "table")
+    v.expect(2, event, "string")
+    ui.h.requireOutput(output)
+
+    if event == ui.c.e.Events.progress_label_update and args[1].objId == self.id then
+        if args[1].newLabel ~= nil then
+            self.baseLabel = args[1].newLabel
+        elseif args[1].newShowProgress ~= nil then
+            self.showProgress = args[1].newShowProgress
+        elseif args[1].newShowPercent ~= nil then
+            self.showPercent = args[1].newShowPercent
+        end
+        self:render(output)
+        return not self.bubble
+    elseif event == ui.c.e.Events.progress_update and args[1].objId == self.id then
+        self.current = math.min(self.total, math.max(0, args[1].newCurrent))
+        self:render(output)
+        return not self.bubble
+    end
+    return false
 end
 
 return ui

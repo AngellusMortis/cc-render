@@ -20,7 +20,9 @@ c.e.Events = {
     frame_up = "ui.frame_up",
     text_update = "ui.text_update",
     button_activate = "ui.button_activate",
-    button_deactivate = "ui.button_deactivate"
+    button_deactivate = "ui.button_deactivate",
+    progress_label_update = "ui.progress_label_update",
+    progress_update = "ui.progress_update"
 }
 
 c.l = {}
@@ -49,6 +51,8 @@ c.l.Events.UI = {
     ["ui.text_update"]=true,
     ["ui.button_activate"]=true,
     ["ui.button_deactivate"]=true,
+    ["ui.progress_label_update"]=true,
+    ["ui.progress_update"]=true
 }
 
 return c

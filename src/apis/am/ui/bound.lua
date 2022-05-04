@@ -188,4 +188,18 @@ function BoundProgressBar:getLabelText()
     self.obj:getLabelText()
 end
 
+---Updates label for ProgressBar
+---@param label? string
+---@param showProgress? boolean
+---@param showPercent? boolean
+function BoundProgressBar:updateLabel(label, showProgress, showPercent)
+    self.obj:updateLabel(self.output, label, showProgress, showPercent)
+end
+
+---Updates progress for ProgressBar
+---@param current number
+function BoundProgressBar:update(current)
+    self.obj:update(self.output, current)
+end
+
 return bound
