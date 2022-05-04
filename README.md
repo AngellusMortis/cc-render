@@ -211,7 +211,12 @@ end
 
 ### Text
 
-Text objects allow you to anchor text on the screen.
+Text objects allow you to anchor text on the screen. Text objects also support some basic color encoding to let you change the color dynamically based on the "alert level" of the message you are displaying. Great for status lines and such. The encoding is based on [Bootstrap alerts](https://getbootstrap.com/docs/5.0/components/alerts/) and work by adding the alert level as a prefix before the text.
+
+* `error:` will make the text `colors.red`
+* `warning:` will make the text `colors.yellow`
+* `success:` will make the text `colors.green`
+* `info:` will make the text `colors.blue`
 
 ```lua
 require(settings.get("ghu.base") .. "core/apis/ghu")
@@ -252,4 +257,19 @@ while true do
     -- `mouse_` event on the right half of the screen
     screen:handle(os.pullEvent())
 end
+```
+
+### Progress Bar
+
+```lua
+require(settings.get("ghu.base") .. "core/apis/ghu")
+ui = require("am.ui")
+
+bar = ui.ProgressBar(ui.a.TopLeft(), "Test")
+bar = bar:bind(term)
+-- renders bar at 0%
+bar:render()
+-- renders bar at 50%
+bar:update(50)
+bar:render()
 ```
