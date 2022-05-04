@@ -197,7 +197,7 @@ parallel.waitForAll(runUILoop, main)
 
 ## Elements
 
-### Frames
+### Frame
 
 All of the more complex items in the library uses Frames, which is essentially a rectangle that gets rendered and allows for a "virtual" computer screen to render children items inside of. For example, a button is a Frame with a Text element Anchored inside (defaults to rendering in the middle of the button Frame.
 
@@ -212,7 +212,7 @@ frame = ui.Frame(ui.a.Anchor(3, 4), {width=5, height=3, fillColor=colors.blue, b
 frame:render(term)
 ```
 
-However, all of the more complex items in the library uses Frames and they allow you create a "virtual" to let you render things to.
+However, all of the more complex items in the library uses Frames and they allow you create a "virtual" screen to let you render things to.
 
 ```lua
 require(settings.get("ghu.base") .. "core/apis/ghu")
