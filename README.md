@@ -9,6 +9,27 @@ Some things that makes my library stand out a bit:
 * Virtual screens/outputs (Frames)
 * Positional anchoring
 
+----
+
+## Table of Contents
+
+* [Install](#install)
+* [Examples](#examples)
+* [Quick Start](#quick-start)
+* [Binding](#binding)
+* [Helpers](#helpers)
+  * [Screen](#screen)
+  * [UILoop](#uiloop)
+* [Elements](#elements)
+  * [Anchors](#anchors)
+  * [Events](#events)
+  * [Frames](#frames)
+  * [Text](#text)
+  * [Button](#button)
+  * [Progress Bar](#progress-bar)
+
+----
+
 ## Install
 
 This library uses [cc-updater](https://github.com/AngellusMortis/cc-updater), but that is automatically installed as part of installing this so there are no extra steps needed.
@@ -25,6 +46,8 @@ You can disable autoupdating on computer boot by removing the `startup.lua` that
 /ghu/core/programs/ghuconf set autoUpdate false
 ```
 
+[Go to top](#another-rendering-library)
+
 ## Examples
 
 You can find some examples using the rendering library in the [/example folder](https://github.com/AngellusMortis/cc-render/tree/master/example/programs). You can also install these examples on your computer with the following command:
@@ -32,6 +55,8 @@ You can find some examples using the rendering library in the [/example folder](
 ```bash
 wget run https://raw.githubusercontent.com/AngellusMortis/cc-render/master/installExamples.lua
 ```
+
+[Go to top](#another-rendering-library)
 
 ## Quick Start
 
@@ -64,6 +89,8 @@ end
 parallel.waitForAll(runUILoop, main)
 ```
 
+[Go to top](#another-rendering-library)
+
 ## Binding
 
 A UI Object is not directly bound to a computer screen. This makes it easier to move the UI object to another screen in the event of a redirect or just wanting to move it. You can bind a UI Object to an output for rendering. The `Screen` helper allows you to never have to really worry about binding and it essentially just becomes an "under the hood" thing.
@@ -84,6 +111,8 @@ screen:add(text)
 screen:render()
 ```
 
+[Go to top](#another-rendering-library)
+
 ## Helpers
 
 ### Screen
@@ -100,6 +129,8 @@ screen = ui.Screen(term, {textColor=colors.white, backgroundColor=colors.black})
 screen:add(ui.Text(ui.a.Top(), "Title")
 screen:render()
 ```
+
+[Go to top](#another-rendering-library)
 
 ### UILoop
 
@@ -124,6 +155,8 @@ end
 parallel.waitForAll(runUILoop, main)
 ```
 
+[Go to top](#another-rendering-library)
+
 ## Elements
 
 ### Anchors
@@ -146,6 +179,8 @@ Available anchors (all anchors are relative to the `require` import):
 * `.a.BottomLeft()` - Anchors object to bottom left corner of a screen
 * `.a.BottomRight()` - Anchors object to bottom right corner of a screen
 
+[Go to top](#another-rendering-library)
+
 ### Events
 
 All events fired by UI objects are pretty consistent. All of the event names are prefixed with `ui.` and they only ever have a single argument: a table with the data encoded into it.
@@ -156,6 +191,8 @@ Every UI event has the following event data:
 * `.outputType` - the type of output the frame was rendered on (`term`, `monitor` or `frame`)
 * `.outputId` - the ID of the output so you can get a reference to it
   * `nil` for term
+
+[Go to top](#another-rendering-library)
 
 ### Frames
 
@@ -229,6 +266,8 @@ while true do
 end
 ```
 
+[Go to top](#another-rendering-library)
+
 ### Text
 
 Text objects allow you to anchor text on the screen. Text objects also support some basic color encoding to let you change the color dynamically based on the "alert level" of the message you are displaying. Great for status lines and such. The encoding is based on [Bootstrap alerts](https://getbootstrap.com/docs/5.0/components/alerts/) and work by adding the alert level as a prefix before the text.
@@ -245,6 +284,8 @@ ui = require("am.ui")
 text = ui.Text(ui.a.Middle(), "Test")
 text:render(term)
 ```
+
+[Go to top](#another-rendering-library)
 
 ### Button
 
@@ -279,6 +320,8 @@ while true do
 end
 ```
 
+[Go to top](#another-rendering-library)
+
 ### Progress Bar
 
 ```lua
@@ -293,3 +336,5 @@ bar:render()
 bar:update(50)
 bar:render()
 ```
+
+[Go to top](#another-rendering-library)
