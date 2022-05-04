@@ -1,6 +1,6 @@
 -- tweak for your repo
 local installRepo = "AngellusMortis/cc-render"
-local ref = "" -- leave blank for master
+local ref = "v1" -- leave blank for master
 local repoPath = "/example" -- leave blank for /src
 local minified = false -- wheter or not to force your install to be minified
 -- `nil` = use cc-updater global (defaults to true)

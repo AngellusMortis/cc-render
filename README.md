@@ -17,12 +17,12 @@ Some things that makes my library stand out a bit:
 * [Examples](#examples)
 * [Quick Start](#quick-start)
 * [Binding](#binding)
+* [Anchors](#anchors)
+* [Events](#events)
 * [Helpers](#helpers)
   * [Screen](#screen)
   * [UILoop](#uiloop)
 * [Elements](#elements)
-  * [Anchors](#anchors)
-  * [Events](#events)
   * [Frames](#frames)
   * [Text](#text)
   * [Button](#button)
@@ -113,6 +113,41 @@ screen:render()
 
 [Go to top](#another-rendering-library)
 
+## Anchors
+
+Rather then rendering text, buttons, etc. to specific coords on a computer screen, Anchors are used instead. Usually we do not want to render a button at a specific location, but rather "the bottom of the screen" or the "top right corner". If you do still want a specific coordinate, you can use the base `Anchor` which allows for absolute positioning.
+
+Any of the anchors that let you anchor something to middle of a line also lets you offset that anchor by a specific amount to either the left or right. `offsetDir` is either the value of `.c.Offset.Left` or `.c.Offset.Right` with the value of `offsetAmount` to indicate how much to offset it by.
+
+Available anchors (all anchors are relative to the `require` import):
+
+* `.a.Anchor(x, y)` - Base anchor. Absolute position
+* `.a.Left(y)` - Anchors object to left side of screen at specified y position
+* `.a.Right(y)` - Anchors object to right side of screen at specified y position
+* `.a.Center(y, offsetDir, offsetAmount)` - Anchors object to center of screen at specified y position
+* `.a.Middle()` - Anchors object to center of screen
+* `.a.Top(offsetDir, offsetAmount)` - Anchors object to center of the first line of the screen
+* `.a.Bottom(offsetDir, offsetAmount)` - Anchors object to center of the last line of the screen
+* `.a.TopLeft()` - Anchors object to top left corner of a screen (1, 1)
+* `.a.TopLeft()` - Anchors object to top right corner of a screen
+* `.a.BottomLeft()` - Anchors object to bottom left corner of a screen
+* `.a.BottomRight()` - Anchors object to bottom right corner of a screen
+
+[Go to top](#another-rendering-library)
+
+## Events
+
+All events fired by UI objects are pretty consistent. All of the event names are prefixed with `ui.` and they only ever have a single argument: a table with the data encoded into it.
+
+Every UI event has the following event data:
+
+* `.objId` - the ID of the frame the event if for
+* `.outputType` - the type of output the frame was rendered on (`term`, `monitor` or `frame`)
+* `.outputId` - the ID of the output so you can get a reference to it
+  * `nil` for term
+
+[Go to top](#another-rendering-library)
+
 ## Helpers
 
 ### Screen
@@ -158,41 +193,6 @@ parallel.waitForAll(runUILoop, main)
 [Go to top](#another-rendering-library)
 
 ## Elements
-
-### Anchors
-
-Rather then rendering text, buttons, etc. to specific coords on a computer screen, Anchors are used instead. Usually we do not want to render a button at a specific location, but rather "the bottom of the screen" or the "top right corner". If you do still want a specific coordinate, you can use the base `Anchor` which allows for absolute positioning.
-
-Any of the anchors that let you anchor something to middle of a line also lets you offset that anchor by a specific amount to either the left or right. `offsetDir` is either the value of `.c.Offset.Left` or `.c.Offset.Right` with the value of `offsetAmount` to indicate how much to offset it by.
-
-Available anchors (all anchors are relative to the `require` import):
-
-* `.a.Anchor(x, y)` - Base anchor. Absolute position
-* `.a.Left(y)` - Anchors object to left side of screen at specified y position
-* `.a.Right(y)` - Anchors object to right side of screen at specified y position
-* `.a.Center(y, offsetDir, offsetAmount)` - Anchors object to center of screen at specified y position
-* `.a.Middle()` - Anchors object to center of screen
-* `.a.Top(offsetDir, offsetAmount)` - Anchors object to center of the first line of the screen
-* `.a.Bottom(offsetDir, offsetAmount)` - Anchors object to center of the last line of the screen
-* `.a.TopLeft()` - Anchors object to top left corner of a screen (1, 1)
-* `.a.TopLeft()` - Anchors object to top right corner of a screen
-* `.a.BottomLeft()` - Anchors object to bottom left corner of a screen
-* `.a.BottomRight()` - Anchors object to bottom right corner of a screen
-
-[Go to top](#another-rendering-library)
-
-### Events
-
-All events fired by UI objects are pretty consistent. All of the event names are prefixed with `ui.` and they only ever have a single argument: a table with the data encoded into it.
-
-Every UI event has the following event data:
-
-* `.objId` - the ID of the frame the event if for
-* `.outputType` - the type of output the frame was rendered on (`term`, `monitor` or `frame`)
-* `.outputId` - the ID of the output so you can get a reference to it
-  * `nil` for term
-
-[Go to top](#another-rendering-library)
 
 ### Frames
 
