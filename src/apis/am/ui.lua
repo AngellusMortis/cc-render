@@ -788,13 +788,21 @@ function Frame:handle(output, event, ...)
         local pos = b.ScreenPos(args[2], args[3])
         local frameEvent = nil
         if self:within(output, pos.x, pos.y) then
-            local x, y = ui.h.getFrameScreen(frameScreen):toRealtivePos(pos.x, pos.y)
+            local fs = ui.h.getFrameScreen(frameScreen)
+            local x, y = fs:toRealtivePos(pos.x, pos.y)
+            local clickArea = fs:getClickArea(
+                x, y, self.padLeft, self.padRight, self.padTop, self.padBottom
+            )
             if event == "mouse_click" then
-                frameEvent = ui.e.FrameClickEvent(output, self.id, x, y, args[1])
+                frameEvent = ui.e.FrameClickEvent(
+                    output, self.id, x, y, clickArea, args[1]
+                )
             elseif event == "mouse_up" then
-                frameEvent = ui.e.FrameDeactivateEvent(output, self.id, x, y, args[1])
+                frameEvent = ui.e.FrameDeactivateEvent(
+                    output, self.id, x, y, clickArea, args[1]
+                )
             else
-                frameEvent = ui.e.FrameTouchEvent(output, self.id, x, y)
+                frameEvent = ui.e.FrameTouchEvent(output, self.id, x, y, clickArea)
             end
             if frameEvent ~= nil then
                 os.queueEvent(frameEvent.name, frameEvent)
@@ -1435,6 +1443,7 @@ function ProgressBar:handle(output, event, ...)
         self:render(output)
         return not self.bubble
     end
+    ProgressBar.super.handle(self, output, {event, unpack(args)})
     return false
 end
 

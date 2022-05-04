@@ -242,6 +242,10 @@ In addition to the above event data, Frame events also have the following data:
 
 * `.x` - x coord for event (can be 0 or negative if frame has padding or border)
 * `.y` - y coord for the event (can be 0 or negative if frame has padding or border)
+* `.clickArea`
+  * `0` if the click event was on the writable screen for the frame
+  * `1` if the click event was in the padding for the frame
+  * `2` if the click event was in the border for the frame
 
 ##### List of Events
 

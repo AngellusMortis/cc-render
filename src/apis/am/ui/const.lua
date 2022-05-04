@@ -10,6 +10,12 @@ c.Offset = {
     Left=1,
     Right=2
 }
+---@type table<string, number>
+c.ClickArea = {
+    Screen=0,
+    Padding=1,
+    Border=2,
+}
 
 c.e = {}
 ---@type table<string, string>

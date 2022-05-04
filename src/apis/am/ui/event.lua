@@ -155,32 +155,38 @@ end
 ---@class am.ui.e.FrameActivateEvent:am.ui.e.UIEvent
 ---@field x number
 ---@field y number
+---@field clickArea number
 local FrameActivateEvent = UIEvent:extend("am.ui.e.FrameActivateEvent")
 e.FrameActivateEvent = FrameActivateEvent
-function FrameActivateEvent:init(name, output, objId, x, y)
+function FrameActivateEvent:init(name, output, objId, x, y, clickArea)
     v.expect(1, name, "string")
     v.expect(2, output, "table")
     v.expect(3, objId, "string")
     v.expect(4, x, "number")
     v.expect(5, y, "number")
+    v.expect(6, clickArea, "number")
+    v.range(clickArea, 0, 2)
     h.requireOutput(output)
     FrameActivateEvent.super.init(self, name, output, objId)
 
     self.x = x
     self.y = y
+    self.clickArea = clickArea
     return self
 end
 
 ---@class am.ui.e.FrameTouchEvent:am.ui.e.FrameActivateEvent
 local FrameTouchEvent = FrameActivateEvent:extend("am.ui.e.FrameTouchEvent")
 e.FrameTouchEvent = FrameTouchEvent
-function FrameTouchEvent:init(output, objId, x, y)
+function FrameTouchEvent:init(output, objId, x, y, clickArea)
     v.expect(1, objId, "string")
     v.expect(2, output, "table")
     v.expect(3, x, "number")
     v.expect(4, y, "number")
+    v.expect(5, clickArea, "number")
+    v.range(clickArea, 0, 2)
     h.requireOutput(output)
-    FrameTouchEvent.super.init(self, c.e.Events.frame_touch, output, objId, x, y)
+    FrameTouchEvent.super.init(self, c.e.Events.frame_touch, output, objId, x, y, clickArea)
 
     return self
 end
@@ -189,15 +195,17 @@ end
 ---@field clickType number
 local FrameClickEvent = FrameActivateEvent:extend("am.ui.e.FrameClickEvent")
 e.FrameClickEvent = FrameClickEvent
-function FrameClickEvent:init(output, objId, x, y, clickType)
+function FrameClickEvent:init(output, objId, x, y, clickArea, clickType)
     v.expect(1, output, "table")
     v.expect(2, objId, "string")
     v.expect(3, x, "number")
     v.expect(4, y, "number")
-    v.expect(5, clickType, "number")
+    v.expect(5, clickArea, "number")
+    v.expect(6, clickType, "number")
+    v.range(clickArea, 0, 2)
     v.range(clickType, 1, 3)
     h.requireOutput(output)
-    FrameClickEvent.super.init(self, c.e.Events.frame_click, output, objId, x, y)
+    FrameClickEvent.super.init(self, c.e.Events.frame_click, output, objId, x, y, clickArea)
 
     self.clickType = clickType
     return self
@@ -207,15 +215,17 @@ end
 ---@field clickType number
 local FrameDeactivateEvent = FrameActivateEvent:extend("am.ui.e.FrameDeactivateEvent")
 e.FrameDeactivateEvent = FrameDeactivateEvent
-function FrameDeactivateEvent:init(output, objId, x, y, clickType)
+function FrameDeactivateEvent:init(output, objId, x, y, clickArea, clickType)
     v.expect(1, output, "table")
     v.expect(2, objId, "string")
     v.expect(3, x, "number")
     v.expect(4, y, "number")
-    v.expect(5, clickType, "number")
+    v.expect(5, clickArea, "number")
+    v.expect(6, clickType, "number")
+    v.range(clickArea, 0, 2)
     v.range(clickType, 1, 3)
     h.requireOutput(output)
-    FrameDeactivateEvent.super.init(self, c.e.Events.frame_up, output, objId, x, y)
+    FrameDeactivateEvent.super.init(self, c.e.Events.frame_up, output, objId, x, y, clickArea)
 
     self.clickType = clickType
     return self

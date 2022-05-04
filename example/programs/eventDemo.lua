@@ -22,21 +22,13 @@ s:add(ui.ProgressBar(ui.a.TopLeft(), {
     fillColor=colors.lightGray,
     fillHorizontal=false,
     labelAnchor=ui.a.Bottom(),
-    id="leftProgressBar"
+    id="progress"
 }))
-s:add(
-    ui.Frame(ui.a.TopLeft(), {
-            width=math.floor(width / 2),
-            fillVertical=true,
-            fillColor=colors.lightGray,
-            id="leftFrame"
-        }
-    )
-)
 local rightFrame = ui.Frame(ui.a.TopRight(), {
         width=math.floor(width / 2),
         fillVertical=true,
-        id="rightFrame"
+        padLeft=2,
+        id="frame"
     }
 )
 rightFrame.borderColor = nil
@@ -45,29 +37,29 @@ rightFrame:add(ui.Text(ui.a.Center(2), "", {id="eventText"}))
 rightFrame:add(ui.Text(ui.a.Center(3), "", {id="eventArgsText"}))
 local counter = ui.Button(
     ui.a.Center(8), string.format("Disabled (%d)", count), {
-        fillColor=colors.blue, disabled=true, id="disabledButton"
+        fillColor=colors.blue, disabled=true, id="count", bubble=false
     }
 )
 rightFrame:add(counter)
 local button1 = ui.Button(
-    ui.a.Center(5, ui.c.Offset.Left), "Add", {fillColor=colors.green, id="addButton"}
+    ui.a.Center(5, ui.c.Offset.Right), "+", {fillColor=colors.green, id="addButton"}
 )
 button1:addActivateHandler(function(button, objOutput)
     count = math.min(100, count + 1)
     counter:updateLabel(objOutput, string.format("Disabled (%d)", count))
-    local progressBar = s:get("leftProgressBar")
+    local progressBar = s:get("progress")
     progressBar:update(count)
 end)
 rightFrame:add(button1)
 local button2 = ui.Button(
-    ui.a.Center(5, ui.c.Offset.Right), "Remove", {
+    ui.a.Center(5, ui.c.Offset.Left), "-", {
         fillColor=colors.yellow, textColor=colors.black, id="removeButton"
     }
 )
 button2:addActivateHandler(function(button, objOutput)
     count = math.max(0, count - 1)
     counter:updateLabel(objOutput, string.format("Disabled (%d)", count))
-    local progressBar = s:get("leftProgressBar")
+    local progressBar = s:get("progress")
     progressBar:update(count)
 end)
 rightFrame:add(button2)
@@ -104,7 +96,7 @@ local function eventLoop()
                 local frameEvent = event[2]
                 eventText:update(event[1])
                 eventArgsText:update(
-                    string.format("%s: %d, %d", frameEvent.objId, frameEvent.x, frameEvent.y)
+                    string.format("%s: %d, %d: %d", frameEvent.objId, frameEvent.x, frameEvent.y, frameEvent.clickArea)
                 )
             end
         end

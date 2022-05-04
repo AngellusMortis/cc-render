@@ -3,6 +3,7 @@ local v = require("cc.expect")
 local object = require("ext.object")
 local h = require("am.ui.helpers")
 local core = require("am.core")
+local c = require("am.ui.const")
 
 local b = {}
 
@@ -320,6 +321,9 @@ function FrameScreen:write(text)
     if self.pos.y > self.height then
         return
     end
+    if self.pos.x > self.width then
+        return
+    end
     self.output.setBackgroundColor(self:getBackgroundColor())
     self.output.setTextColor(self:getTextColor())
     self:setCursorPos(self.pos.x, self.pos.y)
@@ -461,6 +465,45 @@ end
 ---@return number
 function FrameScreen:getPaletteColor(color)
     self.output.getPaletteColor(color)
+end
+
+---Returns click area for a given relative coords
+---@param x number
+---@param y number
+---@param padLeft number
+---@param padRight number
+---@param padTop number
+---@param padBottom number
+function FrameScreen:getClickArea(x, y, padLeft, padRight, padTop, padBottom)
+    local isPadding = false
+    if x < 1 then
+        if x < (1 - padLeft) then
+            return c.ClickArea.Border
+        end
+        isPadding = true
+    elseif x > self.width then
+        if x > self.width + padRight then
+            return c.ClickArea.Border
+        end
+        isPadding = true
+    end
+
+    if y < 1 then
+        if y < (1 - padTop) then
+            return c.ClickArea.Border
+        end
+        isPadding = true
+    elseif y > self.height then
+        if y > self.height + padBottom then
+            return c.ClickArea.Border
+        end
+        isPadding = true
+    end
+
+    if isPadding then
+        return c.ClickArea.Padding
+    end
+    return c.ClickArea.Screen
 end
 
 return b
