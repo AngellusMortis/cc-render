@@ -11,7 +11,27 @@ Some things that makes my library stand out a bit:
 
 ## Install
 
-TODO
+This library uses [cc-updater](https://github.com/AngellusMortis/cc-updater), but that is automatically installed as part of installing this so there are no extra steps needed.
+
+Run the following command in your computer:
+
+```bash
+wget run https://raw.githubusercontent.com/AngellusMortis/cc-updater/master/install.lua
+```
+
+You can disable autoupdating on computer boot by removing the `startup.lua` that was downloaded and running the following command:
+
+```bash
+/ghu/core/programs/ghuconf set autoUpdate false
+```
+
+## Examples
+
+You can find some examples using the rendering library in the [/examples folder](https://github.com/AngellusMortis/cc-render/tree/master/example/programs). You can also install these examples on your computer with the following command:
+
+```bash
+wget run https://raw.githubusercontent.com/AngellusMortis/cc-render/master/installExamples.lua
+```
 
 ## Quick Start
 
