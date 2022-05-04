@@ -298,7 +298,7 @@ Buttons are frames that can be activated and have a Text object inside of them.
 
 * `ui.button_activate` - Fires when a button is activated
   * Has additional data value of `.touch` for if activation was from a touch event
-* `ui.button_deactivate` - Fires when a button is deactivated (eventData = table with `.objId`)
+* `ui.button_deactivate` - Fires when a button is deactivated
 
 #### Event Handlers
 
