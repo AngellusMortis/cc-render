@@ -27,7 +27,7 @@ You can disable autoupdating on computer boot by removing the `startup.lua` that
 
 ## Examples
 
-You can find some examples using the rendering library in the [/examples folder](https://github.com/AngellusMortis/cc-render/tree/master/example/programs). You can also install these examples on your computer with the following command:
+You can find some examples using the rendering library in the [/example folder](https://github.com/AngellusMortis/cc-render/tree/master/example/programs). You can also install these examples on your computer with the following command:
 
 ```bash
 wget run https://raw.githubusercontent.com/AngellusMortis/cc-render/master/installExamples.lua
