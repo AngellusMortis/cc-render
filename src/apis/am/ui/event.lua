@@ -7,6 +7,7 @@ local c = require("am.ui.const")
 local e = {}
 
 ---@class am.ui.e.BaseEvent:am.ui.b.BaseObject
+---@field name string
 local BaseEvent = b.BaseObject:extend("am.ui.e.BaseEvent")
 e.BaseEvent = BaseEvent
 function BaseEvent:init(name)
@@ -18,6 +19,7 @@ function BaseEvent:init(name)
 end
 
 ---@class am.ui.e.LoopCancelEvent:am.ui.e.BaseEvent
+---@field loopId string
 local LoopCancelEvent = BaseEvent:extend("am.ui.e.LoopCancelEvent")
 e.LoopCancelEvent = LoopCancelEvent
 function LoopCancelEvent:init(loopId)
@@ -29,6 +31,10 @@ function LoopCancelEvent:init(loopId)
 end
 
 ---@class am.ui.e.UIEvent:am.ui.e.BaseEvent
+---@field objId string
+---@field name string
+---@field outputType "term"|"monitor"|"frame"
+---@field outputId string|nil
 local UIEvent = BaseEvent:extend("am.ui.e.UIEvent")
 e.UIEvent = UIEvent
 function UIEvent:init(name, output, objId)
@@ -55,6 +61,8 @@ function UIEvent:init(name, output, objId)
 end
 
 ---@class am.ui.e.TextUpdateEvent:am.ui.e.UIEvent
+---@field oldLabel string
+---@field newLabel string
 local TextUpdateEvent = UIEvent:extend("am.ui.e.TextUpdateEvent")
 e.TextUpdateEvent = TextUpdateEvent
 function TextUpdateEvent:init(output, objId, oldLabel, newLabel)
@@ -71,6 +79,7 @@ function TextUpdateEvent:init(output, objId, oldLabel, newLabel)
 end
 
 ---@class am.ui.e.ButtonActivateEvent:am.ui.e.UIEvent
+---@field touch boolean
 local ButtonActivateEvent = UIEvent:extend("am.ui.e.ButtonActivateEvent")
 e.ButtonActivateEvent = ButtonActivateEvent
 function ButtonActivateEvent:init(output, objId, touch)
@@ -100,6 +109,8 @@ function ButtonDeactivateEvent:init(output, objId)
 end
 
 ---@class am.ui.e.FrameActivateEvent:am.ui.e.UIEvent
+---@field x number
+---@field y number
 local FrameActivateEvent = UIEvent:extend("am.ui.e.FrameActivateEvent")
 e.FrameActivateEvent = FrameActivateEvent
 function FrameActivateEvent:init(name, output, objId, x, y)
@@ -131,6 +142,7 @@ function FrameTouchEvent:init(output, objId, x, y)
 end
 
 ---@class am.ui.e.FrameClickEvent:am.ui.e.FrameActivateEvent
+---@field clickType number
 local FrameClickEvent = FrameActivateEvent:extend("am.ui.e.FrameClickEvent")
 e.FrameClickEvent = FrameClickEvent
 function FrameClickEvent:init(output, objId, x, y, clickType)
@@ -148,6 +160,7 @@ function FrameClickEvent:init(output, objId, x, y, clickType)
 end
 
 ---@class am.ui.e.FrameDeactivateEvent:am.ui.e.FrameActivateEvent
+---@field clickType number
 local FrameDeactivateEvent = FrameActivateEvent:extend("am.ui.e.FrameDeactivateEvent")
 e.FrameDeactivateEvent = FrameDeactivateEvent
 function FrameDeactivateEvent:init(output, objId, x, y, clickType)

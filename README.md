@@ -15,6 +15,8 @@ TODO
 
 ## Quick Start
 
+The main file for the project should be pretty well documented, so for anything missing from this readme, check out [that file for more](https://github.com/AngellusMortis/cc-render/blob/master/src/apis/am/ui.lua).
+
 ```lua
 require(settings.get("ghu.base") .. "core/apis/ghu")
 ui = require("am.ui")

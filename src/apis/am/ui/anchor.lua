@@ -72,6 +72,8 @@ function Right:getXPos(output, width)
 end
 
 ---@class am.ui.a.Center:am.ui.a.Anchor
+---@field offset number
+---@field offsetAmount number
 local Center = Anchor:extend("am.ui.a.Center")
 a.Center = Center
 function Center:init(y, offset, offsetAmount)
@@ -123,7 +125,7 @@ function Middle:getYPos(output, height)
     h.requireOutput(output)
 
     local _, oHeight = output.getSize()
-    return math.floor((oHeight + 1) / 2 - height / 2) + 1
+    return math.max(1, math.floor((oHeight + 1) / 2 - height / 2))
 end
 
 ---@class am.ui.a.Top:am.ui.a.Center

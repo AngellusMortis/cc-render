@@ -178,4 +178,14 @@ function BoundButton:onUp(event)
     self.obj:onUp(self.output, event)
 end
 
+---@class am.ui.BoundProgressBar:am.ui.BoundFrame
+---@field obj am.ui.ProgressBar
+local BoundProgressBar = BoundFrame:extend("am.ui.BoundGroup")
+bound.BoundProgressBar = BoundProgressBar
+
+---@return string
+function BoundProgressBar:getLabelText()
+    self.obj:getLabelText()
+end
+
 return bound

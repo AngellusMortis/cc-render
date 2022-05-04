@@ -125,6 +125,8 @@ function UIObject:bind(output)
 end
 
 ---@class am.ui.b.ScreenPos:am.ui.b.BaseObject
+---@field x number
+---@field y number
 local ScreenPos = BaseObject:extend("am.ui.b.ScreenPos")
 b.ScreenPos = ScreenPos
 function ScreenPos:init(x, y)
@@ -140,6 +142,13 @@ function ScreenPos:init(x, y)
 end
 
 ---@class am.ui.FrameScreen:am.ui.b.BaseObject
+---@field output cc.output
+---@field frameId string
+---@field basePos am.ui.b.ScreenPos
+---@field width number
+---@field height number
+---@field textColor number|nil
+---@field backgroundColor number|nil
 local FrameScreen = BaseObject:extend("am.ui.FrameScreen")
 b.FrameScreen = FrameScreen
 function FrameScreen:init(output, frameId, basePos, width, height, textColor, backgroundColor)

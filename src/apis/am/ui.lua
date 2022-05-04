@@ -16,6 +16,7 @@ ui.UIObject = b.UIObject
 ui.UILoop = require("am.ui.loop")
 
 ---@class am.ui.Group:am.ui.b.UIObject
+---@field i am.ui.b.UIObject[]
 local Group = b.UIObject:extend("am.ui.Group")
 ui.Group = Group
 function Group:init(opt)
@@ -57,6 +58,7 @@ function Group:get(id, output)
 
     for _, obj in pairs(self.i) do
         if obj:has(Group) then
+            ---@diagnostic disable-next-line: undefined-field
             local subObj = obj:get(id, output)
             if subObj ~= nil then
                 return subObj
@@ -154,6 +156,9 @@ function Group:handle(output, event, ...)
 end
 
 ---@class am.ui.Screen:am.ui.Group
+---@field output cc.output
+---@field textColor number|nil
+---@field backgroundColor number|nil
 local Screen = Group:extend("am.ui.Screen")
 ui.Screen = Screen
 function Screen:init(output, opt)
@@ -255,6 +260,10 @@ function Screen:bind(output)
 end
 
 ---@class am.ui.Text:am.ui.b.UIObject
+---@field label string
+---@field anchor am.ui.a.Anchor
+---@field textColor number
+---@field backgroundColor number
 local Text = b.UIObject:extend("am.ui.Text")
 ui.Text = Text
 function Text:init(anchor, label, opt)
@@ -362,6 +371,8 @@ function Text:update(output, label)
     ui.h.requireOutput(output)
 
     if self.label ~= label then
+        -- TextUpdate event is used instead of re-rendering directly to allow parent objects
+        --  to capture the update and handle it themselves
         local event = ui.e.TextUpdateEvent(output, self.id, self.label, label)
         self.label = label
         os.queueEvent(event.name, event)
@@ -377,6 +388,21 @@ end
 
 
 ---@class am.ui.Frame:am.ui.Group
+---@field anchor am.ui.a.Anchor
+---@field width number|nil
+---@field height number|nil
+---@field fillHorizontal boolean
+---@field fillVertical boolean
+---@field padLeft number
+---@field padRight number
+---@field padTop number
+---@field padBottom number
+---@field backgroundColor number|nil
+---@field borderColor number|nil
+---@field fillColor number|nil
+---@field textColor number|nil
+---@field border number
+---@field bubble boolean
 local Frame = Group:extend("am.ui.Frame")
 ui.Frame = Frame
 function Frame:init(anchor, opt)
@@ -575,7 +601,7 @@ function Frame:getWidth(output, startX)
     local width = self:getBaseWidth()
     if self.fillHorizontal and not (self.anchor:is(ui.a.Right) or self.anchor:is(ui.a.TopRight) or self.anchor:is(ui.a.BottomRight)) then
         local oWidth, _ = output.getSize()
-        width = oWidth - startX
+        width = oWidth - startX + 1
     end
     return width
 end
@@ -655,9 +681,6 @@ function Frame:makeScreen(output, pos, width, height, doPadding)
     if doPadding then
         frameScreen:addPadding(self.padLeft, self.padRight, self.padTop, self.padBottom)
     end
-    local f = fs.open("debug.log", "a")
-    f.writeLine(string.format("%s %s %s %s %s", self.id, frameScreen.basePos.x, frameScreen.basePos.y, frameScreen.width, frameScreen.height))
-    f.close()
     return frameScreen:ccCompat()
 end
 
@@ -790,6 +813,15 @@ function Frame:bind(output)
 end
 
 ---@class am.ui.Button:am.ui.Frame
+---@field label am.ui.Text
+---@field disabled boolean
+---@field activated boolean
+---@field activateOnTouch boolean
+---@field activateOnLeftClick boolean
+---@field activateOnRightClick boolean
+---@field activateOnMiddleClick boolean
+---@field activateHandlers fun(button:am.ui.Button, output:table, event:am.ui.e.ButtonActivateEvent)[]
+---@field touchTimer number|nil
 local Button = Frame:extend("am.ui.Button")
 ui.Button = Button
 function Button:init(anchor, label, opt)
@@ -1073,6 +1105,245 @@ end
 ---@returns am.ui.BoundButton
 function Button:bind(output)
     return bound.BoundButton(output, self)
+end
+
+---@class am.ui.ProgressBar:am.ui.Frame
+---@field baseLabel string
+---@field label am.ui.Text
+---@field fillFrame am.ui.Frame
+---@field fillLabel am.ui.Text
+---@field current number
+---@field displayCurrent number
+---@field displayTotal number
+---@field total number
+---@field progressColor number
+---@field progressTextColor number
+---@field progressVertical boolean
+---@field showProgress boolean
+---@field showPercent boolean
+local ProgressBar = Frame:extend("am.ui.ProgressBar")
+ui.ProgressBar = ProgressBar
+function ProgressBar:init(anchor, opt)
+    opt = opt or {}
+    v.expect(1, anchor, "table")
+    v.field(opt, "label", "string", "nil")
+    v.field(opt, "labelAnchor", "table", "nil")
+    v.field(opt, "current", "number", "nil")
+    v.field(opt, "total", "number", "nil")
+    v.field(opt, "displayTotal", "number", "nil")
+    v.field(opt, "progressColor", "number", "nil")
+    v.field(opt, "progressTextColor", "number", "nil")
+    v.field(opt, "progressVertical", "boolean", "nil")
+    v.field(opt, "showProgress", "boolean", "nil")
+    v.field(opt, "showPercent", "boolean", "nil")
+    if opt.label == nil then
+        opt.label = ""
+    end
+    if opt.labelAnchor == nil then
+        opt.labelAnchor = ui.a.TopLeft()
+    end
+    if opt.total == nil then
+        opt.total = 100
+    end
+    if opt.current == nil then
+        opt.current = 0
+    end
+    if opt.progressColor == nil then
+        opt.progressColor = colors.green
+    end
+    if opt.progressTextColor == nil then
+        opt.progressTextColor = opt.textColor
+    end
+    if opt.showProgress == nil then
+        opt.showProgress = true
+    end
+    if opt.showPercent == nil then
+        opt.showPercent = true
+    end
+    if opt.progressVertical == nil then
+        opt.progressVertical = false
+    end
+    if opt.fillHorizontal == nil then
+        opt.fillHorizontal = true
+    end
+    if opt.fillVertical == nil then
+        if opt.progressVertical then
+            opt.fillVertical = true
+        end
+    end
+    Button.super.init(self, anchor, opt)
+
+    self.baseLabel = opt.label
+    self.label = Text(opt.labelAnchor, "", {id=string.format("%s.label", self.id)})
+    self.fillFrame = Frame(
+        ui.a.BottomLeft(), {id=string.format("%s.fill", self.id), fillVertical=true, border=0}
+    )
+    self.fillLabel = Text(ui.a.Anchor(1, 1), "", {id=string.format("%s.fillLabel", self.id)})
+    self.current = opt.current
+    self.displayCurrent = nil
+    self.displayTotal = opt.displayTotal
+    self.total = opt.total
+    self.progressColor = opt.progressColor
+    self.progressTextColor = opt.progressTextColor
+    self.progressVertical = opt.progressVertical
+    self.showProgress = opt.showProgress
+    self.showPercent = opt.showPercent
+    self:add(self.label)
+    self:validate()
+    return self
+end
+
+---Validates Frame Object
+---@param output? cc.output
+function ProgressBar:validate(output)
+    ProgressBar.super.validate(self, output)
+
+    if self.fillFrame == nil then
+        return
+    end
+
+    v.field(self, "baseLabel", "string")
+
+    v.field(self, "current", "number")
+    v.range(self.current, 0)
+
+    v.field(self, "total", "number")
+    v.range(self.total, math.floor(self.current))
+
+    v.field(self, "displayCurrent", "number", "nil")
+    v.field(self, "displayTotal", "number", "nil")
+    if self.displayCurrent ~= nil and self.displayTotal ~= nil then
+        v.range(self.displayTotal, math.floor(self.displayCurrent))
+    end
+
+    v.field(self, "progressColor", "number")
+    v.range(self.progressColor, 1)
+
+    v.field(self, "showPercent", "boolean")
+    v.field(self, "showProgress", "boolean")
+
+    self.padLeft = 0
+    self.padRight = 0
+    self.padTop = 0
+    self.padBottom = 0
+end
+
+---Binds ProgressBar to an output
+---@param output cc.output
+---@returns am.ui.BoundProgressBar
+function ProgressBar:bind(output)
+    return bound.BoundProgressBar(output, self)
+end
+
+---Recursively searches for UI Obj by id
+---@param id string
+---@param output? cc.output
+---@return am.ui.b.UIObject?
+function ProgressBar:get(id, output)
+    v.expect(1, id, "string")
+    v.expect(2, output, "table", "nil")
+
+    if id == self.label.id or id == self.fillFrame.id or id == self.fillLabel.id then
+        return self:bind(output)
+    end
+
+    if output ~= nil then
+        ui.h.requireOutput(output)
+        output = self:makeScreen(output)
+    end
+    return Frame.super.get(self, id, output)
+end
+
+---@return string
+function ProgressBar:getLabelText()
+    local label = self.baseLabel
+    local current = math.min(self.current, self.total)
+    local percent = current / self.total
+
+    if self.showPercent then
+        label = label .. string.format(" %d%%", percent * 100)
+    end
+    if self.showProgress then
+        local displayCurrent = self.displayCurrent
+        local displayTotal = self.displayTotal
+        if displayCurrent == nil or displayTotal == nil then
+            displayCurrent = self.current
+            displayTotal = self.total
+        end
+        label = label .. string.format(" [%d/%d]", displayCurrent, displayTotal)
+    end
+
+    return label
+end
+
+---Renders Group and all child UI objs
+---@param output? cc.output
+function ProgressBar:render(output)
+    if not self.visible then
+        return
+    end
+    v.expect(1, output, "table", "nil")
+    if output == nil then
+        output = term
+    end
+    ---@cast output cc.output
+
+    local oldTextColor = output.getTextColor()
+    local oldBackgroundColor = output.getBackgroundColor()
+    local oldX, oldY = output.getCursorPos()
+
+    local screen = self:makeScreen(output)
+    local screenWidth, screenHeight = screen.getSize()
+    local current = math.min(self.current, self.total)
+    local percent = current / self.total
+    local label = self:getLabelText()
+    local labelPos = self.label.anchor:getPos(screen, #label, 1)
+    self.label.label = label
+    ProgressBar.super.render(self, output)
+
+    local fillAmount
+    if self.progressVertical then
+        fillAmount = math.floor(screenHeight * percent)
+    else
+        fillAmount = math.floor(screenWidth * percent)
+    end
+    if fillAmount > 0 then
+        self.fillLabel.label = label
+        self.fillLabel.textColor = self.progressTextColor
+        local renderText = false
+        if self.progressVertical then
+            labelPos.y = labelPos.y - (screenHeight - fillAmount)
+            if labelPos.y > 0 then
+                renderText = true
+            end
+            self.fillFrame.width = screenWidth
+            self.fillFrame.height = fillAmount
+            self.fillFrame.fillVertical = false
+            self.fillFrame.fillHorizontal = true
+        else
+            if labelPos.x <= fillAmount then
+                renderText = true
+            end
+            self.fillFrame.width = fillAmount
+            self.fillFrame.height = screenHeight
+            self.fillFrame.fillVertical = true
+            self.fillFrame.fillHorizontal = false
+        end
+        if renderText then
+            self.fillLabel.anchor.x = labelPos.x
+            self.fillLabel.anchor.y = labelPos.y
+            self.fillFrame:add(self.fillLabel)
+        else
+            self.fillFrame:reset()
+        end
+
+        self.fillFrame.fillColor = self.progressColor
+        self.fillFrame:render(screen)
+    end
+
+    output.setTextColor(oldTextColor)
+    output.setBackgroundColor(oldBackgroundColor)
+    output.setCursorPos(oldX, oldY)
 end
 
 return ui
