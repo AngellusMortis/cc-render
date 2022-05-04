@@ -5,7 +5,7 @@ After trying to use a few other exist rendering libraries (bugs, bad readability
 Some things that makes my library stand out a bit:
 
 * Unminified source has full [Lua language server](https://github.com/sumneko/lua-language-server) type annotation support. Works great in VS Code!
-* Full OOP
+* Full OOP (uses https://github.com/lua-rocks/object to provide OOP interface)
 * Virtual screens/outputs (Frames)
 * Positional anchoring
 * Seemly handles both terminal and monitors
