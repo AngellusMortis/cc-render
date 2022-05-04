@@ -16,9 +16,10 @@ Some things that makes my library stand out a bit:
 * [Install](#install)
 * [Examples](#examples)
 * [Quick Start](#quick-start)
-* [Binding](#binding)
-* [Anchors](#anchors)
-* [Events](#events)
+* [Concepts](#concepts)
+  * [Binding](#binding)
+  * [Anchors](#anchors)
+  * [Events](#events)
 * [Helpers](#helpers)
   * [Screen](#screen)
   * [UILoop](#uiloop)
@@ -91,7 +92,9 @@ parallel.waitForAll(runUILoop, main)
 
 [Go to top](#another-rendering-library)
 
-## Binding
+## Concepts
+
+### Binding
 
 A UI Object is not directly bound to a computer screen. This makes it easier to move the UI object to another screen in the event of a redirect or just wanting to move it. You can bind a UI Object to an output for rendering. The `Screen` helper allows you to never have to really worry about binding and it essentially just becomes an "under the hood" thing.
 
@@ -113,7 +116,7 @@ screen:render()
 
 [Go to top](#another-rendering-library)
 
-## Anchors
+### Anchors
 
 Rather then rendering text, buttons, etc. to specific coords on a computer screen, Anchors are used instead. Usually we do not want to render a button at a specific location, but rather "the bottom of the screen" or the "top right corner". If you do still want a specific coordinate, you can use the base `Anchor` which allows for absolute positioning.
 
@@ -135,7 +138,7 @@ Available anchors (all anchors are relative to the `require` import):
 
 [Go to top](#another-rendering-library)
 
-## Events
+### Events
 
 All events fired by UI objects are pretty consistent. All of the event names are prefixed with `ui.` and they only ever have a single argument: a table with the data encoded into it.
 
