@@ -39,7 +39,7 @@ This library uses [cc-updater](https://github.com/AngellusMortis/cc-updater), bu
 Run the following command in your computer:
 
 ```bash
-wget run https://raw.githubusercontent.com/AngellusMortis/cc-updater/master/install.lua
+wget run https://raw.githubusercontent.com/AngellusMortis/cc-render/master/install.lua
 ```
 
 You can disable autoupdating on computer boot by removing the `startup.lua` that was downloaded and running the following command:
