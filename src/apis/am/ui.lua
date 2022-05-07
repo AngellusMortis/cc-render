@@ -266,7 +266,7 @@ function Screen:bind(output)
 end
 
 ---@class am.ui.Text:am.ui.b.UIObject
----@field label string
+---@field label string|string[]
 ---@field anchor am.ui.a.Anchor
 ---@field textColor number
 ---@field backgroundColor number
@@ -334,6 +334,29 @@ function Text:handle(output, event, ...)
     return false
 end
 
+--- @class am.ui.linedef
+--- @field text string
+--- @field color number|nil
+
+---@return am.ui.linedef[], number
+function Text:getLines()
+    local lines
+    if type(self.label) == "string" then
+        lines = {self.label}
+    else
+        lines = core.copy(self.label)
+    end
+
+    local maxWidth = 0
+    for i, line in ipairs(lines) do
+        lines[i] = {textLib.getTextColor(line)}
+        if #(lines[i].text) > maxWidth then
+            maxWidth = #(lines[i].text)
+        end
+    end
+    return lines, maxWidth
+end
+
 ---Renders Group and all child UI objs
 ---@param output? cc.output
 function Text:render(output)
@@ -352,15 +375,18 @@ function Text:render(output)
     local oldbackgroundColor = output.getBackgroundColor()
     local oldX, oldY = output.getCursorPos()
 
-    local msg, color = textLib.getTextColor(self.label)
-    local pos = self.anchor:getPos(output, #msg, 1)
-    local textColor = ui.h.getColor(self.textColor, color, output.getTextColor())
+    local lines, width = self:getLines()
+    local pos = self.anchor:getPos(output, width, #lines)
     local backgroundColor = ui.h.getColor(self.backgroundColor, output.getBackgroundColor())
 
-    output.setTextColor(textColor)
-    output.setBackgroundColor(backgroundColor)
-    output.setCursorPos(pos.x, pos.y)
-    output.write(msg)
+    for i = 0, #lines - 1, 1 do
+        local textColor = ui.h.getColor(self.textColor, lines[i].color, output.getTextColor())
+
+        output.setTextColor(textColor)
+        output.setBackgroundColor(backgroundColor)
+        output.setCursorPos(pos.x, pos.y + i)
+        output.write(lines[i].text)
+    end
 
     output.setTextColor(oldTextColor)
     output.setBackgroundColor(oldbackgroundColor)
@@ -369,7 +395,7 @@ end
 
 ---Updates label text to output
 ---@param output cc.output
----@param label string
+---@param label string|string[]
 function Text:update(output, label)
     v.expect(1, output, "table")
     v.expect(2, label, "string")
