@@ -128,7 +128,7 @@ local function getEventOutput(event, ...)
     if c.l.Events.Terminal[event] then
         output = term
     elseif c.l.Events.Monitor[event] then
-        output = peripheral.getName(args[1])
+        output = peripheral.wrap(args[1])
     end
     return output
 end

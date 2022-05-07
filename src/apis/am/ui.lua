@@ -3,6 +3,7 @@ local v = require("cc.expect")
 require(settings.get("ghu.base") .. "core/apis/ghu")
 local core = require("am.core")
 local textLib = require("am.text")
+local log = require("am.log")
 
 local b = require("am.ui.base")
 local bound = require("am.ui.bound")
@@ -223,9 +224,14 @@ function Screen:handle(event, ...)
     local event, args = core.cleanEventArgs(event, ...)
     v.expect(1, event, "string")
 
-    local output = ui.h.getEventOutput({event, unpack(args)})
-    if not ui.c.l.Events.UI[event] and not ui.h.isSameScreen(self.output, output) then
-        return false
+    local output
+    if ui.c.l.Events.Always[event] then
+        output = self.output
+    else
+        output = ui.h.getEventOutput({event, unpack(args)})
+        if not ui.c.l.Events.UI[event] and not ui.h.isSameScreen(self.output, output) then
+            return false
+        end
     end
 
     if ui.c.l.Events.UI[event] then
@@ -243,6 +249,7 @@ function Screen:handle(event, ...)
         self:render()
         return false
     end
+
     for _, obj in pairs(self.i) do
         if obj:handle(output, {event, unpack(args)}) then
             return true

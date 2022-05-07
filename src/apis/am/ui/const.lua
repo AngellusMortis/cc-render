@@ -50,6 +50,10 @@ c.l.Events.Monitor = {
     monitor_touch=true
 }
 ---@type table<string, boolean>
+c.l.Events.Always = {
+    timer=true,
+}
+---@type table<string, boolean>
 c.l.Events.UI = {
     ["ui.frame_touch"]=true,
     ["ui.frame_click"]=true,
