@@ -3,7 +3,6 @@ local v = require("cc.expect")
 require(settings.get("ghu.base") .. "core/apis/ghu")
 local core = require("am.core")
 local textLib = require("am.text")
-local log = require("am.log")
 
 local b = require("am.ui.base")
 local bound = require("am.ui.bound")
@@ -295,7 +294,6 @@ function Text:init(anchor, label, opt)
     self:validate()
     return self
 end
-
 ---Validates Frame Object
 ---@param output? cc.output
 function Text:validate(output)
@@ -410,6 +408,10 @@ end
 ---@field textColor number|nil
 ---@field border number
 ---@field bubble boolean
+---@field scrollBar boolean
+---@field scrollBarTrackColor number
+---@field scrollBarColor number
+---@field currentScroll number
 local Frame = Group:extend("am.ui.Frame")
 ui.Frame = Frame
 function Frame:init(anchor, opt)
@@ -430,6 +432,9 @@ function Frame:init(anchor, opt)
     v.field(opt, "textColor", "number", "nil")
     v.field(opt, "border", "number", "nil")
     v.field(opt, "bubble", "boolean", "nil")
+    v.field(opt, "scrollBar", "boolean", "nil")
+    v.field(opt, "scrollBarTrackColor", "number", "nil")
+    v.field(opt, "scrollBarColor", "number", "nil")
     Frame.super.init(self, opt)
     if opt.fillHorizontal == nil then
         opt.fillHorizontal = false
@@ -461,6 +466,15 @@ function Frame:init(anchor, opt)
     if opt.bubble == nil then
         opt.bubble = true
     end
+    if opt.scrollBar == nil then
+        opt.scrollBar = false
+    end
+    if opt.scrollBarTrackColor == nil then
+        opt.scrollBarTrackColor = colors.lightGray
+    end
+    if opt.scrollBarColor == nil then
+        opt.scrollBarColor = colors.gray
+    end
 
     self.anchor = anchor
     self.width = opt.width
@@ -477,6 +491,15 @@ function Frame:init(anchor, opt)
     self.textColor = opt.textColor
     self.border = opt.border
     self.bubble = opt.bubble
+    self.scrollBar = opt.scrollBar
+    self.scrollBarTrackColor = opt.scrollBarTrackColor
+    self.scrollBarColor = opt.scrollBarColor
+    if self.scrollBar then
+        self.currentScroll = 0
+    else
+        self.currentScroll = -1
+    end
+    self.maxScroll = 0
     self:validate()
     return self
 end
@@ -488,6 +511,10 @@ end
 function Frame:get(id, output)
     v.expect(1, id, "string")
     v.expect(2, output, "table", "nil")
+    if id == self.id .. ".scrollFrame" or id == self.id .. ".scrollBar" then
+        return self:bind(output)
+    end
+
     if output ~= nil then
         ui.h.requireOutput(output)
         output = self:makeScreen(output)
@@ -534,6 +561,10 @@ function Frame:validate(output)
     if self.textColor ~= nil then
         v.field(self, "textColor", "number")
         v.range(self.textColor, 1)
+    end
+
+    if self.scrollBar and self.height == nil then
+        error(string.format("frame (%s) cannot have nil height with a scrollBar"))
     end
 end
 
@@ -675,20 +706,83 @@ function Frame:makeScreen(output, pos, width, height, doPadding)
         height = self:getHeight(output, pos.y)
     end
 
+    local viewportHeight = -1
+    if self.scrollBar then
+        _, viewportHeight = output.getSize()
+    end
     if self.border > 0 then
         width = width - 2
         height = height - 2
         pos.x = pos.x + 1
         pos.y = pos.y + 1
+        viewportHeight = viewportHeight - 2
+    end
+    if self.scrollBar then
+        width = width - 1
     end
 
     local frameScreen = b.FrameScreen(
-        output, self.id, core.copy(pos), width, height, self:getTextColor(output), self:getFillColor(output)
+        output, self.id, core.copy(pos), width, height, self:getTextColor(output), self:getFillColor(output), self.currentScroll, viewportHeight
     )
     if doPadding then
         frameScreen:addPadding(self.padLeft, self.padRight, self.padTop, self.padBottom)
     end
     return frameScreen:ccCompat()
+end
+
+---Renders Frame scrollbar
+---@param output cc.output
+---@param width number
+---@param height number
+function Frame:renderScrollBar(output, width, height)
+    local anchor = ui.a.Anchor(width, 1)
+    local _, oHeight = output.getSize()
+    if self.border > 0 then
+        anchor.x = anchor.x - 1
+        anchor.y = anchor.y + 1
+        oHeight = oHeight - 2
+    end
+
+    self.maxScroll = height - oHeight
+    local tHeight = oHeight - 2
+    local sHeight = math.max(1, math.floor(oHeight / height * tHeight))
+    local relScroll = 1
+    if self.maxScroll > 0 then
+        relScroll = math.floor(self.currentScroll / self.maxScroll * tHeight)
+        relScroll = math.min(tHeight - sHeight, relScroll)
+        relScroll = math.max(0, relScroll)
+    end
+    local sAnchor = ui.a.Anchor(1, 2 + relScroll)
+
+
+    local scrollBarId = self.id .. ".scrollBar"
+    if self.scrollFrame == nil then
+        self.scrollFrame = Frame(anchor, {
+            id=self.id .. ".scrollFrame",
+            width=1,
+            height=oHeight,
+            border=0,
+            fillColor=self.scrollBarTrackColor,
+        })
+        local scrollBar = Frame(sAnchor, {
+            id = scrollBarId,
+            width=1,
+            height=sHeight,
+            border=0,
+            fillColor=self.scrollBarColor
+        })
+        self.scrollFrame:add(scrollBar)
+    else
+        self.scrollFrame.anchor = anchor
+        self.scrollFrame.height = oHeight
+        self.scrollFrame.fillColor = self.scrollBarTrackColor
+        local scrollBar = self.scrollFrame.i[scrollBarId]
+        scrollBar.height = sHeight
+        scrollBar.fillColor = self.scrollBarColor
+        scrollBar.anchor = sAnchor
+    end
+
+    self.scrollFrame:render(output)
 end
 
 ---Renders Group and all child UI objs
@@ -716,13 +810,23 @@ function Frame:render(output)
     local borderColor = self:getBorderColor(output)
     local textColor = self:getTextColor(output)
 
-    if self.border > 0 and (self:getBackgroundColor() ~= nil or self:getBorderColor() ~= nil) then
-        if self.border == 1 then
-            ui.h.renderBorder1(output, pos, width, height, backgroundColor, borderColor)
-        elseif self.border == 2 then
-            ui.h.renderBorder2(output, pos, width, height, backgroundColor, borderColor)
-        else
-            ui.h.renderBorder3(output, pos, width, height, borderColor)
+    -- actual content height
+    local sHeight = height - self.padTop - self.padBottom
+    if self.border > 0 then
+        sHeight = sHeight - 2
+        if self:getBackgroundColor() ~= nil or self:getBorderColor() ~= nil then
+            local bHeight = height
+            if self.scrollBar then
+                local _, oHeight = output.getSize()
+                bHeight = math.min(bHeight, oHeight)
+            end
+            if self.border == 1 then
+                ui.h.renderBorder1(output, pos, width, bHeight, backgroundColor, borderColor)
+            elseif self.border == 2 then
+                ui.h.renderBorder2(output, pos, width, bHeight, backgroundColor, borderColor)
+            else
+                ui.h.renderBorder3(output, pos, width, bHeight, borderColor)
+            end
         end
     end
 
@@ -735,6 +839,10 @@ function Frame:render(output)
     ui.h.getFrameScreen(frameScreen):addPadding(
         self.padLeft, self.padRight, self.padTop, self.padBottom
     )
+    if self.scrollBar then
+        sHeight = sHeight + self.padTop + self.padBottom
+        self:renderScrollBar(output, width, sHeight)
+    end
     Frame.super.render(self, frameScreen)
 
     output.setTextColor(oldTextColor)
@@ -784,6 +892,12 @@ function Frame:handle(output, event, ...)
     v.expect(2, event, "string")
     ui.h.requireOutput(output)
 
+    if event == ui.c.e.Events.frame_scroll and args[1].objId == self.id then
+        self.currentScroll = args[1].newScroll
+        self:render(output)
+        return true
+    end
+
     local frameScreen = self:makeScreen(output)
     for _, obj in pairs(self.i) do
         if obj:handle(frameScreen, {event, unpack(args)}) then
@@ -791,25 +905,52 @@ function Frame:handle(output, event, ...)
         end
     end
 
-    if event == "mouse_click" or event == "mouse_up" or event == "monitor_touch" then
-        local pos = b.ScreenPos(args[2], args[3])
+    local events = {
+        mouse_click = true,
+        mouse_up = true,
+        monitor_touch = true,
+        mouse_scroll = true,
+    }
+    if events[event] then
+        local pos
+        if args[2] > 0 and args[3] > 0 then
+            pos = b.ScreenPos(args[2], args[3])
+        end
         local frameEvent = nil
-        if self:within(output, pos.x, pos.y) then
-            local fs = ui.h.getFrameScreen(frameScreen)
-            local x, y = fs:toRealtivePos(pos.x, pos.y)
-            local clickArea = fs:getClickArea(
-                x, y, self.padLeft, self.padRight, self.padTop, self.padBottom
-            )
-            if event == "mouse_click" then
-                frameEvent = ui.e.FrameClickEvent(
-                    output, self.id, x, y, clickArea, args[1]
-                )
-            elseif event == "mouse_up" then
-                frameEvent = ui.e.FrameDeactivateEvent(
-                    output, self.id, x, y, clickArea, args[1]
-                )
+        if (args[2] == 0 and args[3] == 0) or self:within(output, pos.x, pos.y) then
+            if event == "mouse_scroll" then
+                local scrollAmount = args[1]
+                -- CraftOS PC bug
+                if scrollAmount == 0 then
+                    scrollAmount = -1
+                end
+                local oldScroll = self.currentScroll
+                local newScroll = self.currentScroll + scrollAmount
+                if scrollAmount < 0 then
+                    self.currentScroll = math.max(0, newScroll)
+                else
+                    self.currentScroll = math.min(self.maxScroll, newScroll)
+                end
+                if self.currentScroll ~= oldScroll then
+                    frameEvent = ui.e.FrameScrollEvent(output, self.id, oldScroll, self.currentScroll)
+                end
             else
-                frameEvent = ui.e.FrameTouchEvent(output, self.id, x, y, clickArea)
+                local fs = ui.h.getFrameScreen(frameScreen)
+                local x, y = fs:toRealtivePos(pos.x, pos.y)
+                local clickArea = fs:getClickArea(
+                    x, y, self.padLeft, self.padRight, self.padTop, self.padBottom
+                )
+                if event == "mouse_click" then
+                    frameEvent = ui.e.FrameClickEvent(
+                        output, self.id, x, y, clickArea, args[1]
+                    )
+                elseif event == "mouse_up" then
+                    frameEvent = ui.e.FrameDeactivateEvent(
+                        output, self.id, x, y, clickArea, args[1]
+                    )
+                elseif event == "monitor_touch" then
+                    frameEvent = ui.e.FrameTouchEvent(output, self.id, x, y, clickArea)
+                end
             end
             if frameEvent ~= nil then
                 os.queueEvent(frameEvent.name, frameEvent)

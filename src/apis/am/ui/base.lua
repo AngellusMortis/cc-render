@@ -152,7 +152,7 @@ end
 ---@field backgroundColor number|nil
 local FrameScreen = BaseObject:extend("am.ui.FrameScreen")
 b.FrameScreen = FrameScreen
-function FrameScreen:init(output, frameId, basePos, width, height, textColor, backgroundColor)
+function FrameScreen:init(output, frameId, basePos, width, height, textColor, backgroundColor, currentScroll, viewportHeight)
     FrameScreen.super.init(self)
     v.expect(1, output, "table")
     v.expect(2, frameId, "string")
@@ -161,6 +161,8 @@ function FrameScreen:init(output, frameId, basePos, width, height, textColor, ba
     v.expect(5, height, "number")
     v.expect(6, textColor, "number", "nil")
     v.expect(7, backgroundColor, "number", "nil")
+    v.expect(8, currentScroll, "number")
+    v.expect(9, viewportHeight, "number")
     h.requireOutput(output)
     if not h.isPos(basePos) then
         error("basePos must be a ScreenPos")
@@ -174,6 +176,14 @@ function FrameScreen:init(output, frameId, basePos, width, height, textColor, ba
         v.range(backgroundColor, 1)
     end
 
+    if currentScroll == -1 then
+        self.viewportStart = 1
+        self.viewportEnd = height
+    else
+        self.viewportStart = 1 + currentScroll
+        self.viewportEnd = self.viewportStart + viewportHeight - 1
+    end
+
     self.output = output
     self.frameId = frameId
     self.basePos = basePos
@@ -182,6 +192,7 @@ function FrameScreen:init(output, frameId, basePos, width, height, textColor, ba
     self.height = height
     self.textColor = textColor
     self.backgroundColor = backgroundColor
+    self.currentScroll = currentScroll
     return self
 end
 
@@ -284,6 +295,7 @@ function FrameScreen:addPadding(padLeft, padRight, padTop, padBottom)
     self.basePos.y = self.basePos.y + padTop
     self.width = math.max(0, self.width - padLeft - padRight)
     self.height = math.max(0, self.height - padTop - padBottom)
+    self.viewportEnd = self.viewportEnd - padTop - padBottom
 end
 
 ---Recursively converts a FrameScreen coordinate into real coords on the physical CC screen
@@ -318,7 +330,7 @@ end
 ---Writes text to FrameScreen at current pos
 ---@param text string
 function FrameScreen:write(text)
-    if self.pos.y > self.height then
+    if self.pos.y > self.height or self.pos.y < self.viewportStart or self.pos.y > self.viewportEnd then
         return
     end
     if self.pos.x > self.width then
@@ -329,11 +341,11 @@ function FrameScreen:write(text)
     self:setCursorPos(self.pos.x, self.pos.y)
     for i = 1, #text, 1 do
         local char = text:sub(i,i)
+        self.output.write(char)
+        self.pos.x = self.pos.x + 1
         if self.pos.x > self.width then
             return
         end
-        self.output.write(char)
-        self.pos.x = self.pos.x + 1
     end
 end
 
@@ -364,7 +376,8 @@ end
 ---Clears whole FrameScreen, will not clear padding or border area
 function FrameScreen:clear()
     local oldPos = core.copy(self.pos)
-    for y = 1, self.height, 1 do
+    self:setCursorPos(self.pos.x, self.viewportStart)
+    for y = self.viewportStart, self.viewportEnd, 1 do
         self:clearLine()
         self.pos.y = self.pos.y + 1
     end
@@ -435,8 +448,11 @@ function FrameScreen:setCursorPos(x, y)
     v.range(x, 1, self.width)
     v.range(y, 1, self.height)
     self.pos = {x=x, y=y}
+    if y < self.viewportStart or y > self.viewportEnd then
+        return
+    end
     x = x - 1
-    y = y - 1
+    y = y - self.viewportStart
     self.output.setCursorPos(self.basePos.x + x, self.basePos.y + y)
 end
 
@@ -446,11 +462,9 @@ function FrameScreen:isColor()
     return self.output.isColor()
 end
 
----Scrolls FrameScreen (TODO)
+---Scrolling is actually handled within the frame
 ---@param y number
 function FrameScreen:scroll(y)
-    -- TODO
-    error("Scrolling for Frame Not Supported")
 end
 
 ---Sets palette color for FrameScreen output
