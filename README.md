@@ -233,6 +233,17 @@ output.setCursorPos(3, height)
 output.write("Test")
 ```
 
+#### Scroll Bar
+
+Frames also support vertical scrolling. To do so though, they must have a fixed height rather then it being calculated on the fly.
+
+```lua
+require(settings.get("ghu.base") .. "core/apis/ghu")
+ui = require("am.ui")
+
+frame = ui.Frame(ui.a.TopRight(), {width=math.floor(width / 2), height=100, scrollBar=true})
+```
+
 #### Frame Events
 
 Frames also provides click events to mirror the ones for monitors and terminals.
