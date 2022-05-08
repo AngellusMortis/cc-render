@@ -1053,12 +1053,14 @@ function Frame:handle(output, event, ...)
             local handled = false
             if event == "mouse_scroll" then
                 if self.scrollBar then
-                    local scrollAmount = args[1]
-                    -- CraftOS PC bug
-                    if scrollAmount == 0 then
-                        scrollAmount = -1
+                    if pos == nil or self:within(output, pos.x, pos.y) then
+                        local scrollAmount = args[1]
+                        -- CraftOS PC bug
+                        if scrollAmount == 0 then
+                            scrollAmount = -1
+                        end
+                        self:scroll(output, scrollAmount)
                     end
-                    self:scroll(output, scrollAmount)
                 end
                 return false
             else
