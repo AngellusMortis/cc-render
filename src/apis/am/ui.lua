@@ -204,7 +204,7 @@ end
 ---@return am.ui.b.UIBoundObject?
 function Screen:get(id)
     v.expect(1, id, "string")
-    return Screen.super.get(self, id, self.output, self.visible)
+    return Screen.super.get(self, id, self.output)
 end
 
 ---Renders Screen and all child UI objs
@@ -575,7 +575,11 @@ function Frame:get(id, output)
     v.expect(2, output, "table", "nil")
 
     local parts = core.split(id, ".")
-    if parts[1] == self.id then
+    local baseId = parts[1]
+    for i = 2, #parts - 1, 1 do
+        baseId = baseId .. "." .. parts[i]
+    end
+    if baseId == self.id then
         return self:bind(output)
     end
 
@@ -812,25 +816,26 @@ end
 ---@param output cc.output
 ---@param width number
 ---@param height number
-function Frame:renderScrollBar(output, width, height)
-    local anchor = ui.a.Anchor(width, 1)
-    local _, oHeight = output.getSize()
+---@param rHeight number
+---@param startY number
+function Frame:renderScrollBar(output, width, height, rHeight, startY)
+    local anchor = ui.a.Anchor(width, startY)
     if self.border > 0 then
         anchor.x = anchor.x - 1
         anchor.y = anchor.y + 1
-        oHeight = oHeight - 2
+        rHeight = rHeight - 2
     end
 
-    self.maxScroll = height - oHeight
-    local tHeight = oHeight - 2
-    local sHeight = math.max(1, math.floor(oHeight / height * tHeight))
+    self.maxScroll = height - rHeight
+    local tHeight = rHeight - 2
+    local sHeight = math.max(1, math.floor(rHeight / height * tHeight))
     local relScroll = 1
     if self.maxScroll > 0 then
         relScroll = math.floor(self.currentScroll / self.maxScroll * tHeight)
         relScroll = math.min(tHeight - sHeight, relScroll)
         relScroll = math.max(0, relScroll)
     end
-    local sAnchor = ui.a.Anchor(1, 2 + relScroll)
+    local sAnchor = ui.a.Anchor(1, startY + relScroll)
 
     local frame = self
     local scrollBarId = self.id .. ".scrollBar"
@@ -840,7 +845,7 @@ function Frame:renderScrollBar(output, width, height)
         self.scrollFrame = ui.Frame(anchor, {
             id=self.id .. ".scrollFrame",
             width=1,
-            height=oHeight,
+            height=rHeight,
             border=0,
             fillColor=self.scrollBarTrackColor,
         })
@@ -877,7 +882,7 @@ function Frame:renderScrollBar(output, width, height)
         self.scrollFrame:add(scrollBar)
     else
         self.scrollFrame.anchor = anchor
-        self.scrollFrame.height = oHeight
+        self.scrollFrame.height = rHeight
         self.scrollFrame.fillColor = self.scrollBarTrackColor
         local scrollUp = self.scrollFrame.i[scrollUpButtonId]
         scrollUp.disabled = self.currentScroll == 0
@@ -927,22 +932,22 @@ function Frame:render(output)
     local borderColor = self:getBorderColor(output)
     local textColor = self:getTextColor(output)
 
+    local rHeight = height
+    if self.scrollBar then
+        local _, oHeight = output.getSize()
+        rHeight = math.min(rHeight, oHeight - pos.y + 1)
+    end
     -- actual content height
     local sHeight = height - self.padTop - self.padBottom
     if self.border > 0 then
         sHeight = sHeight - 2
         if self:getBackgroundColor() ~= nil or self:getBorderColor() ~= nil then
-            local bHeight = height
-            if self.scrollBar then
-                local _, oHeight = output.getSize()
-                bHeight = math.min(bHeight, oHeight)
-            end
             if self.border == 1 then
-                ui.h.renderBorder1(output, pos, width, bHeight, backgroundColor, borderColor)
+                ui.h.renderBorder1(output, pos, width, rHeight, backgroundColor, borderColor)
             elseif self.border == 2 then
-                ui.h.renderBorder2(output, pos, width, bHeight, backgroundColor, borderColor)
+                ui.h.renderBorder2(output, pos, width, rHeight, backgroundColor, borderColor)
             else
-                ui.h.renderBorder3(output, pos, width, bHeight, borderColor)
+                ui.h.renderBorder3(output, pos, width, rHeight, borderColor)
             end
         end
     end
@@ -958,7 +963,7 @@ function Frame:render(output)
     )
     if self.scrollBar then
         sHeight = sHeight + self.padTop + self.padBottom
-        self:renderScrollBar(output, width, sHeight)
+        self:renderScrollBar(output, width, sHeight, rHeight, pos.y)
     end
     Frame.super.render(self, frameScreen)
 
@@ -1044,7 +1049,7 @@ function Frame:handle(output, event, ...)
             pos = b.ScreenPos(args[2], args[3])
         end
         local frameEvent = nil
-        if (args[2] == 0 and args[3] == 0) or self:within(output, pos.x, pos.y) then
+        if event == "mouse_scroll" or (pos ~= nil and self:within(output, pos.x, pos.y)) then
             local handled = false
             if event == "mouse_scroll" then
                 if self.scrollBar then
