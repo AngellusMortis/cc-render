@@ -1,3 +1,4 @@
+local v = require("cc.expect")
 
 local b = require("am.ui.base")
 
@@ -18,7 +19,14 @@ end
 ---@param id string
 ---@return am.ui.b.UIObject?, table
 function BoundGroup:get(id)
+    v.expect(1, id, "string")
     return self.obj:get(id, self.output)
+end
+
+---Recursively sets visible
+---@param visible boolean
+function BoundGroup:setVisible(visible)
+    self.obj:setVisible(visible)
 end
 
 ---Recursively searches for UI Obj by id and removes it

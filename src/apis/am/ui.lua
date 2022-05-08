@@ -68,6 +68,21 @@ function Group:get(id, output)
     return nil
 end
 
+---Recursively sets visible
+---@param visible boolean
+function Group:setVisible(visible)
+    v.expect(1, visible, "boolean")
+    self.visible = visible
+    for _, obj in pairs(self.i) do
+        if obj:has(Group) then
+            ---@cast obj am.ui.Group
+            obj:setVisible(visible)
+        else
+            obj.visible = visible
+        end
+    end
+end
+
 ---Recursively searches for UI Obj by id and removes it
 ---@param id string
 ---@return boolean
@@ -189,7 +204,7 @@ end
 ---@return am.ui.b.UIBoundObject?
 function Screen:get(id)
     v.expect(1, id, "string")
-    return Screen.super.get(self, id, self.output)
+    return Screen.super.get(self, id, self.output, self.visible)
 end
 
 ---Renders Screen and all child UI objs
@@ -407,7 +422,7 @@ end
 ---@param label string|string[]
 function Text:update(output, label)
     v.expect(1, output, "table")
-    v.expect(2, label, "string")
+    v.expect(2, label, "string", "table")
     ui.h.requireOutput(output)
 
     if self.label ~= label then
@@ -558,6 +573,7 @@ end
 function Frame:get(id, output)
     v.expect(1, id, "string")
     v.expect(2, output, "table", "nil")
+
     local parts = core.split(id, ".")
     if parts[1] == self.id then
         return self:bind(output)
@@ -837,7 +853,6 @@ function Frame:renderScrollBar(output, width, height)
             padLeft=0,
         })
         scrollUpButton:addActivateHandler(function()
-            log.debug(string.format("upOutput %s", ui.h.isTerm(output)))
             frame:scroll(output, -1)
         end)
         local scrollDownButton = ui.Button(ui.a.BottomLeft(), "v", {
@@ -848,7 +863,6 @@ function Frame:renderScrollBar(output, width, height)
             padLeft=0,
         })
         scrollDownButton:addActivateHandler(function()
-            log.debug(string.format("downOutput %s", ui.h.isTerm(output)))
             frame:scroll(output, 1)
         end)
         local scrollBar = ui.Frame(sAnchor, {
@@ -972,8 +986,8 @@ function Frame:within(output, x, y)
 
     local topLeft = self.anchor:getPos(output, self:getBaseWidth(), self:getBaseHeight())
     if ui.h.isFrameScreen(output) then
-        output = ui.h.getFrameScreen(output)
-        topLeft = b.ScreenPos(output:toAbsolutePos(topLeft.x, topLeft.y))
+        local fs = ui.h.getFrameScreen(output)
+        topLeft = b.ScreenPos(fs:toAbsolutePos(topLeft.x, topLeft.y))
     end
 
     local width = self:getWidth(output, topLeft.x)
@@ -995,11 +1009,6 @@ function Frame:handle(output, event, ...)
     v.expect(2, event, "string")
     ui.h.requireOutput(output)
 
-    if ui.c.l.Events.UI[event] then
-        log.debug(string.format("%s: %s %s", self.id, event, args[1].objId))
-    end
-
-    local frameScreen = nil
     if event == ui.c.e.Events.frame_scroll and args[1].objId == self.id then
         if self.scrollBar then
             self.currentScroll = args[1].newScroll
@@ -1036,6 +1045,7 @@ function Frame:handle(output, event, ...)
         end
         local frameEvent = nil
         if (args[2] == 0 and args[3] == 0) or self:within(output, pos.x, pos.y) then
+            local handled = false
             if event == "mouse_scroll" then
                 if self.scrollBar then
                     local scrollAmount = args[1]
@@ -1043,7 +1053,6 @@ function Frame:handle(output, event, ...)
                     if scrollAmount == 0 then
                         scrollAmount = -1
                     end
-                    log.debug(string.format("eventOutput %s", ui.h.isTerm(output)))
                     self:scroll(output, scrollAmount)
                 end
                 return false
@@ -1053,7 +1062,8 @@ function Frame:handle(output, event, ...)
                 local clickArea = fs:getClickArea(
                     x, y, self.padLeft, self.padRight, self.padTop, self.padBottom
                 )
-                if event == "mouse_click" then
+                if event == "mouse_click" and self.visible then
+                    handled = true
                     frameEvent = ui.e.FrameClickEvent(
                         output, self.id, x, y, clickArea, args[1]
                     )
@@ -1061,14 +1071,16 @@ function Frame:handle(output, event, ...)
                     frameEvent = ui.e.FrameDeactivateEvent(
                         output, self.id, x, y, clickArea, args[1]
                     )
-                elseif event == "monitor_touch" then
+                elseif event == "monitor_touch" and self.visible then
+                    handled = true
                     frameEvent = ui.e.FrameTouchEvent(output, self.id, x, y, clickArea)
                 end
+
                 if frameEvent ~= nil then
                     os.queueEvent(frameEvent.name, frameEvent)
                 end
             end
-            return true
+            return handled
         end
     end
     return false
@@ -1322,6 +1334,10 @@ function Button:handle(output, event, ...)
     v.expect(2, event, "string")
     ui.h.requireOutput(output)
 
+    if event == "mouse_up" then
+        self:deactivate(output)
+        return false
+    end
     if ui.c.l.Events.UI[event] then
         local eventData = args[1]
         if eventData.objId == self.id then
@@ -1408,7 +1424,7 @@ function ProgressBar:init(anchor, opt)
         opt.label = ""
     end
     if opt.labelAnchor == nil then
-        opt.labelAnchor = ui.a.TopLeft()
+        opt.labelAnchor = ui.a.Anchor(2, 1)
     end
     if opt.total == nil then
         opt.total = 100

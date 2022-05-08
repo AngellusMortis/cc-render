@@ -61,15 +61,15 @@ function UIEvent:init(name, output, objId)
 end
 
 ---@class am.ui.e.TextUpdateEvent:am.ui.e.UIEvent
----@field oldLabel string
----@field newLabel string
+---@field oldLabel string|string[]
+---@field newLabel string|string[]
 local TextUpdateEvent = UIEvent:extend("am.ui.e.TextUpdateEvent")
 e.TextUpdateEvent = TextUpdateEvent
 function TextUpdateEvent:init(output, objId, oldLabel, newLabel)
     v.expect(1, output, "table")
     v.expect(2, objId, "string")
-    v.expect(3, oldLabel, "string")
-    v.expect(4, newLabel, "string")
+    v.expect(3, oldLabel, "string", "table")
+    v.expect(4, newLabel, "string", "table")
     h.requireOutput(output)
     TextUpdateEvent.super.init(self, c.e.Events.text_update, output, objId)
 

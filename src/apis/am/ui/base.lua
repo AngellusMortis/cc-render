@@ -122,6 +122,7 @@ end
 ---@param output cc.output
 ---@returns am.ui.b.UIBoundObject
 function UIObject:bind(output)
+    v.expect(1, output, "table")
     return UIBoundObject(output, self)
 end
 
@@ -176,7 +177,7 @@ function FrameScreen:init(output, frameId, basePos, width, height, textColor, ba
         v.range(backgroundColor, 1)
     end
 
-    if currentScroll == -1 then
+    if currentScroll < 0 then
         self.viewportStart = 1
         self.viewportEnd = height
     else
@@ -445,8 +446,8 @@ end
 function FrameScreen:setCursorPos(x, y)
     v.expect(1, x, "number")
     v.expect(2, y, "number")
-    v.range(x, 1, self.width)
-    v.range(y, 1, self.height)
+    v.range(x, 1)
+    v.range(y, 1)
     self.pos = {x=x, y=y}
     if y < self.viewportStart or y > self.viewportEnd then
         return
