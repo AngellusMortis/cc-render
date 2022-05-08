@@ -74,6 +74,10 @@ local function run()
     s:render()
     loop:run(s)
 end
+local excluded_events = {
+    [ui.c.e.Events.text_update] = true,
+    [ui.c.e.Events.progress_update] = true
+}
 local function eventLoop()
     while loop.running do
         -- timeout timer
@@ -82,22 +86,26 @@ local function eventLoop()
         local event = {os.pullEvent()}
         if ui.c.l.Events.UI[event[1]] then
             local eventText = s:get("eventText")
-            local eventArgsText = s:get("eventArgsText")
-            if event[1] == ui.c.e.Events.loop_cancel then
+            if not excluded_events[event[1]] then
                 eventText:update(event[1])
-                eventArgsText:update("")
-            elseif event[1] == ui.c.e.Events.button_activate then
-                eventText:update(event[1])
-                eventArgsText:update(string.format("%s: %s", event[2].objId, event[2].touch))
-            elseif event[1] == ui.c.e.Events.button_deactivate then
-                eventText:update(event[1])
-                eventArgsText:update(event[2].objId)
-            elseif event[1] ~= ui.c.e.Events.text_update and event[1] ~= ui.c.e.Events.progress_update then
-                local frameEvent = event[2]
-                eventText:update(event[1])
-                eventArgsText:update(
-                    string.format("%s: %d, %d: %d", frameEvent.objId, frameEvent.x, frameEvent.y, frameEvent.clickArea)
-                )
+
+                local eventArgsText = s:get("eventArgsText")
+                if event[1] == ui.c.e.Events.loop_cancel then
+                    eventArgsText:update("")
+                elseif event[1] == ui.c.e.Events.button_activate then
+                    eventArgsText:update(string.format("%s: %s", event[2].objId, event[2].touch))
+                elseif event[1] == ui.c.e.Events.button_deactivate then
+                    eventArgsText:update(event[2].objId)
+                elseif event[1] == ui.c.e.Events.frame_scroll then
+                    eventArgsText:update(
+                        string.format("%s: %d", event[2].objId, event[2].newScroll)
+                    )
+                elseif event[1] ~= ui.c.e.Events.text_update and event[1] ~= ui.c.e.Events.progress_update then
+                    local frameEvent = event[2]
+                    eventArgsText:update(
+                        string.format("%s: %d, %d: %d", frameEvent.objId, frameEvent.x, frameEvent.y, frameEvent.clickArea)
+                    )
+                end
             end
         end
         os.cancelTimer(timer)

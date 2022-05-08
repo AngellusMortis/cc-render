@@ -114,11 +114,10 @@ function Group:render(output)
         output = term
     end
     ---@cast output cc.output
-    Group.super.render(self, output)
-
     local oldTextColor = output.getTextColor()
     local oldBackgroundColor = output.getBackgroundColor()
     local oldX, oldY = output.getCursorPos()
+    Group.super.render(self, output)
 
     for _, obj in pairs(self.i) do
         obj:render(output)
@@ -236,7 +235,7 @@ function Screen:handle(event, ...)
     if ui.c.l.Events.UI[event] then
         local obj = self:get(args[1].objId)
         if obj ~= nil then
-            if not obj:handle({event, unpack(args)}) then
+            if obj:handle({event, unpack(args)}) then
                 return true
             end
         end
@@ -275,7 +274,7 @@ ui.Text = Text
 function Text:init(anchor, label, opt)
     opt = opt or {}
     v.expect(1, anchor, "table")
-    v.expect(2, label, "string")
+    v.expect(2, label, "string", "table")
     v.field(opt, "id", "string", "nil")
     v.field(opt, "textColor", "number", "nil")
     v.field(opt, "backgroundColor", "number", "nil")
@@ -299,7 +298,7 @@ end
 function Text:validate(output)
     Text.super.validate(self, output)
 
-    v.field(self, "label", "string")
+    v.field(self, "label", "string", "table")
     v.field(self, "anchor", "table")
     v.field(self, "textColor", "number", "nil")
     v.field(self, "backgroundColor", "number", "nil")
@@ -320,16 +319,24 @@ function Text:handle(output, event, ...)
     v.expect(2, event, "string")
     ui.h.requireOutput(output)
 
-    if event == ui.c.e.Events.text_update and args[1].objId == self.id then
-        local oldLabel = args[1].oldLabel
-        local newLabel = args[1].newLabel
-        if #newLabel < #oldLabel then
-            self.label = string.rep(" ", #oldLabel)
+    if ui.c.l.Events.UI[event] and args[1].objId == self.id then
+        if event == ui.c.e.Events.text_update then
+            local oldLabel = args[1].oldLabel
+            local newLabel = args[1].newLabel
+            if #newLabel < #oldLabel then
+                self.label = string.rep(" ", #oldLabel)
+                local oldBackgroundColor = self.backgroundColor
+                local oldTextColor = self.textColor
+                self.backgroundColor = output.getBackgroundColor()
+                self.textColor = output.getBackgroundColor()
+                self:render(output)
+                self.backgroundColor = oldBackgroundColor
+                self.textColor = oldTextColor
+            end
+            self.label = newLabel
             self:render(output)
+            return true
         end
-        self.label = args[1].newLabel
-        self:render(output)
-        return true
     end
     return false
 end
@@ -349,10 +356,12 @@ function Text:getLines()
 
     local maxWidth = 0
     for i, line in ipairs(lines) do
-        lines[i] = {textLib.getTextColor(line)}
-        if #(lines[i].text) > maxWidth then
-            maxWidth = #(lines[i].text)
+        local text, color = textLib.getTextColor(line)
+        local newLine = {text=text, color=color}
+        if #text > maxWidth then
+            maxWidth = #text
         end
+        lines[i] = newLine
     end
     return lines, maxWidth
 end
@@ -369,27 +378,27 @@ function Text:render(output)
         output = term
     end
     ---@cast output cc.output
-    Text.super.render(self, output)
-
     local oldTextColor = output.getTextColor()
-    local oldbackgroundColor = output.getBackgroundColor()
+    local oldBackgroundColor = output.getBackgroundColor()
     local oldX, oldY = output.getCursorPos()
+    Text.super.render(self, output)
 
     local lines, width = self:getLines()
     local pos = self.anchor:getPos(output, width, #lines)
     local backgroundColor = ui.h.getColor(self.backgroundColor, output.getBackgroundColor())
 
     for i = 0, #lines - 1, 1 do
-        local textColor = ui.h.getColor(self.textColor, lines[i].color, output.getTextColor())
+        local line = lines[i + 1]
+        local textColor = ui.h.getColor(self.textColor, line.color, output.getTextColor())
 
         output.setTextColor(textColor)
         output.setBackgroundColor(backgroundColor)
         output.setCursorPos(pos.x, pos.y + i)
-        output.write(lines[i].text)
+        output.write(line.text)
     end
 
     output.setTextColor(oldTextColor)
-    output.setBackgroundColor(oldbackgroundColor)
+    output.setBackgroundColor(oldBackgroundColor)
     output.setCursorPos(oldX, oldY)
 end
 
@@ -433,10 +442,12 @@ end
 ---@field fillColor number|nil
 ---@field textColor number|nil
 ---@field border number
----@field bubble boolean
 ---@field scrollBar boolean
 ---@field scrollBarTrackColor number
 ---@field scrollBarColor number
+---@field scrollBarButtonColor number
+---@field scrollBarTextColor number
+---@field scrollBarDisabledColor number
 ---@field currentScroll number
 local Frame = Group:extend("am.ui.Frame")
 ui.Frame = Frame
@@ -457,10 +468,12 @@ function Frame:init(anchor, opt)
     v.field(opt, "fillColor", "number", "nil")
     v.field(opt, "textColor", "number", "nil")
     v.field(opt, "border", "number", "nil")
-    v.field(opt, "bubble", "boolean", "nil")
     v.field(opt, "scrollBar", "boolean", "nil")
     v.field(opt, "scrollBarTrackColor", "number", "nil")
     v.field(opt, "scrollBarColor", "number", "nil")
+    v.field(opt, "scrollBarButtonColor", "number", "nil")
+    v.field(opt, "scrollBarTextColor", "number", "nil")
+    v.field(opt, "scrollBarDisabledColor", "number", "nil")
     Frame.super.init(self, opt)
     if opt.fillHorizontal == nil then
         opt.fillHorizontal = false
@@ -489,9 +502,6 @@ function Frame:init(anchor, opt)
     if opt.padBottom == nil then
         opt.padBottom = opt.padTop
     end
-    if opt.bubble == nil then
-        opt.bubble = true
-    end
     if opt.scrollBar == nil then
         opt.scrollBar = false
     end
@@ -500,6 +510,15 @@ function Frame:init(anchor, opt)
     end
     if opt.scrollBarColor == nil then
         opt.scrollBarColor = colors.gray
+    end
+    if opt.scrollBarButtonColor == nil then
+        opt.scrollBarButtonColor = opt.scrollBarColor
+    end
+    if opt.scrollBarTextColor == nil then
+        opt.scrollBarTextColor = opt.scrollBarTrackColor
+    end
+    if opt.scrollBarDisabledColor == nil then
+        opt.scrollBarDisabledColor = colors.black
     end
 
     self.anchor = anchor
@@ -516,10 +535,12 @@ function Frame:init(anchor, opt)
     self.fillColor = opt.fillColor
     self.textColor = opt.textColor
     self.border = opt.border
-    self.bubble = opt.bubble
     self.scrollBar = opt.scrollBar
     self.scrollBarTrackColor = opt.scrollBarTrackColor
     self.scrollBarColor = opt.scrollBarColor
+    self.scrollBarButtonColor = opt.scrollBarButtonColor
+    self.scrollBarTextColor = opt.scrollBarTextColor
+    self.scrollBarDisabledColor = opt.scrollBarDisabledColor
     if self.scrollBar then
         self.currentScroll = 0
     else
@@ -537,7 +558,8 @@ end
 function Frame:get(id, output)
     v.expect(1, id, "string")
     v.expect(2, output, "table", "nil")
-    if id == self.id .. ".scrollFrame" or id == self.id .. ".scrollBar" then
+    local parts = core.split(id, ".")
+    if parts[1] == self.id then
         return self:bind(output)
     end
 
@@ -756,6 +778,20 @@ function Frame:makeScreen(output, pos, width, height, doPadding)
     return frameScreen:ccCompat()
 end
 
+function Frame:scroll(output, amount)
+    local oldScroll = self.currentScroll
+    local newScroll = self.currentScroll + amount
+    if amount < 0 then
+        self.currentScroll = math.max(0, newScroll)
+    else
+        self.currentScroll = math.min(self.maxScroll, newScroll)
+    end
+    if self.currentScroll ~= oldScroll then
+        local event = ui.e.FrameScrollEvent(output, self.id, oldScroll, self.currentScroll)
+        os.queueEvent(event.name, event)
+    end
+end
+
 ---Renders Frame scrollbar
 ---@param output cc.output
 ---@param width number
@@ -780,28 +816,69 @@ function Frame:renderScrollBar(output, width, height)
     end
     local sAnchor = ui.a.Anchor(1, 2 + relScroll)
 
-
+    local frame = self
     local scrollBarId = self.id .. ".scrollBar"
+    local scrollUpButtonId = self.id .. ".scrollUp"
+    local scrollDownButtonId = self.id .. ".scrollDown"
     if self.scrollFrame == nil then
-        self.scrollFrame = Frame(anchor, {
+        self.scrollFrame = ui.Frame(anchor, {
             id=self.id .. ".scrollFrame",
             width=1,
             height=oHeight,
             border=0,
             fillColor=self.scrollBarTrackColor,
         })
-        local scrollBar = Frame(sAnchor, {
+        local scrollUpButton = ui.Button(ui.a.TopLeft(), "^", {
+            id=scrollUpButtonId,
+            fillColor=self.scrollBarDisabledColor,
+            textColor=self.scrollBarTextColor,
+            border=0,
+            disabled=true,
+            padLeft=0,
+        })
+        scrollUpButton:addActivateHandler(function()
+            log.debug(string.format("upOutput %s", ui.h.isTerm(output)))
+            frame:scroll(output, -1)
+        end)
+        local scrollDownButton = ui.Button(ui.a.BottomLeft(), "v", {
+            id=scrollDownButtonId,
+            fillColor=self.scrollBarButtonColor,
+            textColor=self.scrollBarTextColor,
+            border=0,
+            padLeft=0,
+        })
+        scrollDownButton:addActivateHandler(function()
+            log.debug(string.format("downOutput %s", ui.h.isTerm(output)))
+            frame:scroll(output, 1)
+        end)
+        local scrollBar = ui.Frame(sAnchor, {
             id = scrollBarId,
             width=1,
             height=sHeight,
             border=0,
             fillColor=self.scrollBarColor
         })
+        self.scrollFrame:add(scrollUpButton)
+        self.scrollFrame:add(scrollDownButton)
         self.scrollFrame:add(scrollBar)
     else
         self.scrollFrame.anchor = anchor
         self.scrollFrame.height = oHeight
         self.scrollFrame.fillColor = self.scrollBarTrackColor
+        local scrollUp = self.scrollFrame.i[scrollUpButtonId]
+        scrollUp.disabled = self.currentScroll == 0
+        if scrollUp.disabled then
+            scrollUp.fillColor = self.scrollBarDisabledColor
+        else
+            scrollUp.fillColor = self.scrollBarButtonColor
+        end
+        local scrollDown = self.scrollFrame.i[scrollDownButtonId]
+        scrollDown.disabled = self.currentScroll == self.maxScroll
+        if scrollDown.disabled then
+            scrollDown.fillColor = self.scrollBarDisabledColor
+        else
+            scrollDown.fillColor = self.scrollBarButtonColor
+        end
         local scrollBar = self.scrollFrame.i[scrollBarId]
         scrollBar.height = sHeight
         scrollBar.fillColor = self.scrollBarColor
@@ -918,16 +995,31 @@ function Frame:handle(output, event, ...)
     v.expect(2, event, "string")
     ui.h.requireOutput(output)
 
+    if ui.c.l.Events.UI[event] then
+        log.debug(string.format("%s: %s %s", self.id, event, args[1].objId))
+    end
+
+    local frameScreen = nil
     if event == ui.c.e.Events.frame_scroll and args[1].objId == self.id then
-        self.currentScroll = args[1].newScroll
-        self:render(output)
+        if self.scrollBar then
+            self.currentScroll = args[1].newScroll
+            self:render(output)
+        end
         return true
+    elseif self.scrollBar then
+        if self.scrollFrame ~= nil then
+            if event ~= "mouse_scroll" then
+                if self.scrollFrame:handle(output, {event, unpack(args)}) then
+                    return true
+                end
+            end
+        end
     end
 
     local frameScreen = self:makeScreen(output)
     for _, obj in pairs(self.i) do
         if obj:handle(frameScreen, {event, unpack(args)}) then
-            return not self.bubble
+            return true
         end
     end
 
@@ -945,21 +1037,16 @@ function Frame:handle(output, event, ...)
         local frameEvent = nil
         if (args[2] == 0 and args[3] == 0) or self:within(output, pos.x, pos.y) then
             if event == "mouse_scroll" then
-                local scrollAmount = args[1]
-                -- CraftOS PC bug
-                if scrollAmount == 0 then
-                    scrollAmount = -1
+                if self.scrollBar then
+                    local scrollAmount = args[1]
+                    -- CraftOS PC bug
+                    if scrollAmount == 0 then
+                        scrollAmount = -1
+                    end
+                    log.debug(string.format("eventOutput %s", ui.h.isTerm(output)))
+                    self:scroll(output, scrollAmount)
                 end
-                local oldScroll = self.currentScroll
-                local newScroll = self.currentScroll + scrollAmount
-                if scrollAmount < 0 then
-                    self.currentScroll = math.max(0, newScroll)
-                else
-                    self.currentScroll = math.min(self.maxScroll, newScroll)
-                end
-                if self.currentScroll ~= oldScroll then
-                    frameEvent = ui.e.FrameScrollEvent(output, self.id, oldScroll, self.currentScroll)
-                end
+                return false
             else
                 local fs = ui.h.getFrameScreen(frameScreen)
                 local x, y = fs:toRealtivePos(pos.x, pos.y)
@@ -977,11 +1064,11 @@ function Frame:handle(output, event, ...)
                 elseif event == "monitor_touch" then
                     frameEvent = ui.e.FrameTouchEvent(output, self.id, x, y, clickArea)
                 end
+                if frameEvent ~= nil then
+                    os.queueEvent(frameEvent.name, frameEvent)
+                end
             end
-            if frameEvent ~= nil then
-                os.queueEvent(frameEvent.name, frameEvent)
-            end
-            return not self.bubble
+            return true
         end
     end
     return false
@@ -1271,7 +1358,7 @@ function Button:handle(output, event, ...)
                 return true
             end
         end
-        return not self.bubble
+        return eventData.objId == self.id or eventData.objId == self.label.id
     elseif event == "timer" then
         if args[1] == self.touchTimer then
             self.touchTimer = nil
@@ -1317,7 +1404,6 @@ function ProgressBar:init(anchor, opt)
     v.field(opt, "progressVertical", "boolean", "nil")
     v.field(opt, "showProgress", "boolean", "nil")
     v.field(opt, "showPercent", "boolean", "nil")
-    v.field(opt, "bubble", "boolean", "nil")
     if opt.label == nil then
         opt.label = ""
     end
@@ -1352,9 +1438,6 @@ function ProgressBar:init(anchor, opt)
         if opt.progressVertical then
             opt.fillVertical = true
         end
-    end
-    if opt.bubble == nil then
-        opt.bubble = true
     end
     Button.super.init(self, anchor, opt)
 
@@ -1611,11 +1694,11 @@ function ProgressBar:handle(output, event, ...)
             self.showPercent = args[1].newShowPercent
         end
         self:render(output)
-        return not self.bubble
+        return true
     elseif event == ui.c.e.Events.progress_update and args[1].objId == self.id then
         self.current = math.min(self.total, math.max(0, args[1].newCurrent))
         self:render(output)
-        return not self.bubble
+        return true
     end
     ProgressBar.super.handle(self, output, {event, unpack(args)})
     return false

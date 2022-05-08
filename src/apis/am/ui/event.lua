@@ -234,7 +234,7 @@ end
 ---@class am.ui.e.FrameScrollEvent:am.ui.e.UIEvent
 ---@field oldScroll number
 ---@field newScroll number
-local FrameScrollEvent = FrameActivateEvent:extend("am.ui.e.FrameScrollEvent")
+local FrameScrollEvent = UIEvent:extend("am.ui.e.FrameScrollEvent")
 e.FrameScrollEvent = FrameScrollEvent
 function FrameScrollEvent:init(output, objId, oldScroll, newScroll)
     v.expect(1, output, "table")
@@ -242,7 +242,7 @@ function FrameScrollEvent:init(output, objId, oldScroll, newScroll)
     v.expect(3, oldScroll, "number")
     v.expect(4, newScroll, "number")
     h.requireOutput(output)
-    FrameDeactivateEvent.super.init(self, c.e.Events.frame_scroll, output, objId)
+    FrameScrollEvent.super.init(self, c.e.Events.frame_scroll, output, objId)
 
     self.oldScroll = oldScroll
     self.newScroll = newScroll

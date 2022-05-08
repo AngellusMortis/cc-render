@@ -24,22 +24,29 @@ local scrollFrame = ui.Frame(ui.a.TopLeft(), {
     scrollBar=true,
     id="scrollFrame",
     scrollBarTrackColor=colors.blue,
+    scrollBarButtonColor=colors.green,
+    scrollBarDisabledColor=colors.red,
     padLeft=1,
     padTop=1,
 })
 scrollFrame:add(ui.Text(ui.a.Top(), "Top Text", {textColor=colors.black}))
-scrollFrame:add(ui.Text(ui.a.Left(5), "y=5", {textColor=colors.black}))
-scrollFrame:add(ui.Text(ui.a.Left(10), "y=10", {textColor=colors.black}))
-scrollFrame:add(ui.Text(ui.a.Left(15), "y=15", {textColor=colors.black}))
-scrollFrame:add(ui.Text(ui.a.Left(20), "y=20", {textColor=colors.black}))
-scrollFrame:add(ui.Text(ui.a.Left(25), "y=25", {textColor=colors.black}))
+local text = {}
+for i = 5, 25, 1 do
+    if i % 5 == 0 then
+        text[i - 4] = string.format("y=%d", i)
+    else
+        text[i - 4] = ""
+    end
+end
+scrollFrame:add(ui.Text(ui.a.Left(5), text, {textColor=colors.black}))
 scrollFrame:add(ui.Text(ui.a.Bottom(), "Bottom Text", {textColor=colors.black}))
 s:add(scrollFrame)
 local rightFrame = ui.Frame(ui.a.TopRight(), {
         width=math.floor(width / 2),
         fillVertical=true,
         padLeft=2,
-        id="frame"
+        id="frame",
+        fillColor=colors.black,
     }
 )
 rightFrame.borderColor = nil
@@ -57,6 +64,10 @@ local function run()
     s:render()
     loop:run(s)
 end
+local excluded_events = {
+    [ui.c.e.Events.text_update] = true,
+    [ui.c.e.Events.progress_update] = true
+}
 local function eventLoop()
     while loop.running do
         -- timeout timer
@@ -65,23 +76,26 @@ local function eventLoop()
         local event = {os.pullEvent()}
         if ui.c.l.Events.UI[event[1]] then
             local eventText = s:get("eventText")
-            local eventArgsText = s:get("eventArgsText")
-            if event[1] == ui.c.e.Events.loop_cancel then
+            if not excluded_events[event[1]] then
                 eventText:update(event[1])
-                eventArgsText:update("")
-            elseif event[1] == ui.c.e.Events.button_activate then
-                eventText:update(event[1])
-                eventArgsText:update(string.format("%s: %s", event[2].objId, event[2].touch))
-            elseif event[1] == ui.c.e.Events.button_deactivate then
-                eventText:update(event[1])
-                eventArgsText:update(event[2].objId)
-            elseif event[1] == ui.c.e.Events.frame_scroll then
-            elseif event[1] ~= ui.c.e.Events.text_update and event[1] ~= ui.c.e.Events.progress_update then
-                local frameEvent = event[2]
-                eventText:update(event[1])
-                eventArgsText:update(
-                    string.format("%s: %d, %d: %d", frameEvent.objId, frameEvent.x, frameEvent.y, frameEvent.clickArea)
-                )
+
+                local eventArgsText = s:get("eventArgsText")
+                if event[1] == ui.c.e.Events.loop_cancel then
+                    eventArgsText:update("")
+                elseif event[1] == ui.c.e.Events.button_activate then
+                    eventArgsText:update(string.format("%s: %s", event[2].objId, event[2].touch))
+                elseif event[1] == ui.c.e.Events.button_deactivate then
+                    eventArgsText:update(event[2].objId)
+                elseif event[1] == ui.c.e.Events.frame_scroll then
+                    eventArgsText:update(
+                        string.format("%s: %d", event[2].objId, event[2].newScroll)
+                    )
+                elseif event[1] ~= ui.c.e.Events.text_update and event[1] ~= ui.c.e.Events.progress_update then
+                    local frameEvent = event[2]
+                    eventArgsText:update(
+                        string.format("%s: %d, %d: %d", frameEvent.objId, frameEvent.x, frameEvent.y, frameEvent.clickArea)
+                    )
+                end
             end
         end
         os.cancelTimer(timer)
