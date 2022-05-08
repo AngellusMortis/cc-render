@@ -844,7 +844,7 @@ function Frame:renderScrollBar(output, width, height)
             border=0,
             fillColor=self.scrollBarTrackColor,
         })
-        local scrollUpButton = ui.Button(ui.a.TopLeft(), "^", {
+        local scrollUpButton = ui.Button(ui.a.TopLeft(), "\x1e", {
             id=scrollUpButtonId,
             fillColor=self.scrollBarDisabledColor,
             textColor=self.scrollBarTextColor,
@@ -855,7 +855,7 @@ function Frame:renderScrollBar(output, width, height)
         scrollUpButton:addActivateHandler(function()
             frame:scroll(output, -1)
         end)
-        local scrollDownButton = ui.Button(ui.a.BottomLeft(), "v", {
+        local scrollDownButton = ui.Button(ui.a.BottomLeft(), "\x1f", {
             id=scrollDownButtonId,
             fillColor=self.scrollBarButtonColor,
             textColor=self.scrollBarTextColor,
