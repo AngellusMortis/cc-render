@@ -17,9 +17,15 @@ function BoundTabbedFrame:createTab(id)
     return self.obj:createTab(id)
 end
 
----@return am.ui.Frame
+---@param index number
+---@return am.ui.BoundFrame
+function BoundTabbedFrame:getTab(index)
+    return self.obj:getTab(self.output, index)
+end
+
+---@return am.ui.BoundFrame
 function BoundTabbedFrame:getActive()
-    return self.obj:getActive()
+    return self.obj:getActive(self.output)
 end
 
 ---@param index number
@@ -37,7 +43,7 @@ local TabbedFrame = Frame:extend("am.ui.Popup")
 ---@param anchor am.ui.a.Anchor
 ---@param opt am.ui.Frame.opt
 
----@return am.ui.Frame
+---@return am.ui.TabbedFrame
 function TabbedFrame:init(anchor, opt)
     opt = opt or {}
     v.expect(1, anchor, "table")
@@ -51,6 +57,7 @@ function TabbedFrame:init(anchor, opt)
     self.tabs = {}
     self:createTab(opt.primaryTabId)
     self:setActive(nil, 1)
+    return self
 end
 
 ---@param id string
@@ -79,25 +86,39 @@ function TabbedFrame:createTab(id)
         scrollBarTextColor=self.scrollBarTextColor,
         scrollBarDisabledColor=self.scrollBarDisabledColor
     })
+    tab:setVisible(false)
     self.tabs[index] = tab
     return tab
 end
 
----@return am.ui.Frame
-function TabbedFrame:getActive()
-    return self.tabs[self.active]
+---@param output cc.output
+---@return am.ui.BoundFrame
+function TabbedFrame:getTab(output, index)
+    v.expect(1, index, "number")
+    v.range(index, 1, #self.tabs)
+
+    local tab = self.tabs[index]
+    return tab:bind(output)
+end
+
+---@param output cc.output
+---@return am.ui.BoundFrame
+function TabbedFrame:getActive(output)
+    return self:getTab(output, self.active)
 end
 
 ---@param output cc.output
 ---@param index number
 function TabbedFrame:setActive(output, index)
     v.expect(1, index, "number")
-    v.range(index, 1, #index)
+    v.range(index, 1, #self.tabs)
 
     for tabIndex, tab in ipairs(self.tabs) do
         if tabIndex == index then
             tab:setVisible(true)
-            tab.currentScroll = 0
+            if tab.scrollBar then
+                tab.currentScroll = 0
+            end
         else
             tab:setVisible(false)
         end
@@ -128,8 +149,8 @@ function TabbedFrame:render(output)
         return
     end
 
-    local tab = self:getActive()
-    tab:render(output)
+    local tab = self:getActive(output)
+    tab:render()
 end
 
 ---@param id string
@@ -165,23 +186,23 @@ end
 ---@param doPadding? boolean
 ---@return am.ui.FrameScreenCompat
 function TabbedFrame:makeScreen(output, pos, width, height, doPadding)
-    local tab = self:getActive()
-    return tab:makeScreen(output, pos, width, height, doPadding)
+    local tab = self:getActive(output)
+    return tab:makeScreen(pos, width, height, doPadding)
 end
 
 ---@param output cc.output
 ---@param amount number
 function TabbedFrame:scroll(output, amount)
-    local tab = self:getActive()
-    return tab:scroll(output, amount)
+    local tab = self:getActive(output)
+    return tab:scroll(amount)
 end
 
 ---@param x number
 ---@param y number
 ---@return boolean
 function TabbedFrame:within(output, x, y)
-    local tab = self:getActive()
-    return tab:within(output, x, y)
+    local tab = self:getActive(output)
+    return tab:within(x, y)
 end
 
 ---@param output cc.output
@@ -193,8 +214,8 @@ function TabbedFrame:handle(output, event, ...)
     local event, args = core.cleanEventArgs(event, ...)
 
     if event == c.e.Events.tab_change then
-        self.active = args[1].newIndex
-        self.render(output)
+        self:setActive(nil, args[1].newIndex)
+        self:render(output)
         return true
     end
 
@@ -204,6 +225,12 @@ function TabbedFrame:handle(output, event, ...)
         end
     end
     return false
+end
+
+---@param output cc.output
+---@returns am.ui.BoundTabbedFrame
+function TabbedFrame:bind(output)
+    return BoundTabbedFrame(output, self)
 end
 
 return TabbedFrame
