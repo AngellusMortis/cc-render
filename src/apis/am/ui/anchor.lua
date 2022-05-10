@@ -45,38 +45,7 @@ function Anchor:getPos(output, width, height)
     return b.ScreenPos(x, y)
 end
 
----@class am.ui.a.Left:am.ui.a.Anchor
-local Left = Anchor:extend("am.ui.a.Left")
-a.Left = Left
----@param y number
----@return am.ui.a.Left
-function Left:init(y)
-    v.expect(1, y, "number")
-    v.range(y, 1)
-    Left.super.init(self, 1, y)
-    return self
-end
-
----@class am.ui.a.Right:am.ui.a.Anchor
-local Right = Anchor:extend("am.ui.a.Right")
-a.Right = Right
----@param y number
----@return am.ui.a.Right
-function Right:init(y)
-    v.expect(1, y, "number")
-    v.range(y, 1)
-    Right.super.init(self, 1, y)
-    return self
-end
-
-function Right:getXPos(output, width)
-    v.expect(1, output, "table")
-    v.expect(2, width, "number")
-    h.requireOutput(output)
-
-    local oWidth, _ = output.getSize()
-    return math.max(1, oWidth - width + 1)
-end
+--region Center Aligned
 
 ---@class am.ui.a.Center:am.ui.a.Anchor
 ---@field offset number
@@ -184,30 +153,51 @@ function Bottom:getYPos(output, height)
     return oHeight - height + 1
 end
 
----@class am.ui.a.TopLeft:am.ui.a.Anchor
-local TopLeft = Anchor:extend("am.ui.a.TopLeft")
+--endregion
+
+--region Left Aligned
+
+---@class am.ui.a.Left:am.ui.a.Anchor
+local Left = Anchor:extend("am.ui.a.Left")
+a.Left = Left
+---@param y number
+---@param offsetAmount? number
+---@return am.ui.a.Left
+function Left:init(y, offsetAmount)
+    v.expect(1, y, "number")
+    v.expect(2, offsetAmount, "number", "nil")
+    v.range(y, 1)
+    if offsetAmount == nil then
+        offsetAmount = 0
+    else
+        v.range(offsetAmount, 0)
+    end
+    Left.super.init(self, 1, y)
+    self.offsetAmount = 0
+    return self
+end
+
+function Left:getXPos(output, width)
+    return self.x + self.offsetAmount
+end
+
+---@class am.ui.a.TopLeft:am.ui.a.Left
+local TopLeft = Left:extend("am.ui.a.TopLeft")
 a.TopLeft = TopLeft
 ---@return am.ui.a.TopLeft
-function TopLeft:init()
-    TopLeft.super.init(self, 1, 1)
+---@param offsetAmount? number
+function TopLeft:init(offsetAmount)
+    TopLeft.super.init(self, 1, 1, offsetAmount)
     return self
 end
 
----@class am.ui.a.TopRight:am.ui.a.Right
-local TopRight = Right:extend("am.ui.a.TopRight")
-a.TopRight = TopRight
----@return am.ui.a.TopRight
-function TopRight:init()
-    TopRight.super.init(self, 1, 1)
-    return self
-end
-
----@class am.ui.a.BottomLeft:am.ui.a.Anchor
-local BottomLeft = Anchor:extend("am.ui.a.BottomLeft")
+---@class am.ui.a.BottomLeft:am.ui.a.Left
+local BottomLeft = Left:extend("am.ui.a.BottomLeft")
 a.BottomLeft = BottomLeft
+---@param offsetAmount? number
 ---@return am.ui.a.BottomLeft
 function BottomLeft:init()
-    BottomLeft.super.init(self, 1, 1)
+    BottomLeft.super.init(self, 1, 1, offsetAmount)
     return self
 end
 
@@ -220,22 +210,69 @@ function BottomLeft:getYPos(output, height)
     return oHeight - height + 1
 end
 
----@class am.ui.a.BottomRight:am.ui.a.BottomLeft
-local BottomRight = BottomLeft:extend("am.ui.a.BottomRight")
-a.BottomRight = BottomRight
----@return am.ui.a.BottomRight
-function BottomRight:init()
-    BottomRight.super.init(self)
+--endregion
+
+
+--region Right Aligned
+
+---@class am.ui.a.Right:am.ui.a.Anchor
+local Right = Anchor:extend("am.ui.a.Right")
+a.Right = Right
+---@param y number
+---@param offsetAmount? number
+---@return am.ui.a.Right
+function Right:init(y, offsetAmount)
+    v.expect(1, y, "number")
+    v.expect(2, offsetAmount, "number", "nil")
+    v.range(y, 1)
+    if offsetAmount == nil then
+        offsetAmount = 0
+    else
+        v.range(offsetAmount, 0)
+    end
+    Right.super.init(self, 1, y)
+    self.offsetAmount = offsetAmount
     return self
 end
 
-function BottomRight:getXPos(output, width)
+function Right:getXPos(output, width)
     v.expect(1, output, "table")
     v.expect(2, width, "number")
     h.requireOutput(output)
 
     local oWidth, _ = output.getSize()
-    return oWidth - width
+    return math.max(1, oWidth - width + 1) - self.offsetAmount
 end
+
+---@class am.ui.a.TopRight:am.ui.a.Right
+local TopRight = Right:extend("am.ui.a.TopRight")
+a.TopRight = TopRight
+---@param offsetAmount? number
+---@return am.ui.a.TopRight
+function TopRight:init(offsetAmount)
+    TopRight.super.init(self, 1, 1, offsetAmount)
+    return self
+end
+
+---@class am.ui.a.BottomRight:am.ui.a.Right
+local BottomRight = Right:extend("am.ui.a.BottomRight")
+a.BottomRight = BottomRight
+---@param offsetAmount? number
+---@return am.ui.a.BottomRight
+function BottomRight:init(offsetAmount)
+    BottomRight.super.init(self, offsetAmount)
+    return self
+end
+
+function BottomRight:getYPos(output, height)
+    v.expect(1, output, "table")
+    v.expect(2, height, "number")
+    h.requireOutput(output)
+
+    local _, oHeight = output.getSize()
+    return oHeight - height + 1
+end
+
+--endregion
 
 return a

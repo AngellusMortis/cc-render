@@ -2,8 +2,6 @@ local v = require("cc.expect")
 
 local core = require("am.core")
 
-local b = require("am.ui.base")
-local bound = require("am.ui.bound")
 local a = require("am.ui.anchor")
 local c = require("am.ui.const")
 local e = require("am.ui.event")
