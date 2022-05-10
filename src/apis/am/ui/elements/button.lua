@@ -376,7 +376,7 @@ end
 ---@param output cc.output
 ---@returns am.ui.BoundButton
 function Button:bind(output)
-    return bound.BoundButton(output, self)
+    return BoundButton(output, self)
 end
 
 return Button
