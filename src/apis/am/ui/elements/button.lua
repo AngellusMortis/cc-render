@@ -371,7 +371,7 @@ function Button:handle(output, event, ...)
         end
     end
 
-    return Button.super.handle(self, output, {event, unpack(args)})
+    return Button.super.handle(self, output, {event, table.unpack(args)})
 end
 
 ---Binds Button to an output

@@ -190,7 +190,7 @@ function Group:handle(output, event, ...)
     end
 
     for _, obj in pairs(self.i) do
-        if obj:handle(output, {event, unpack(args)}) then
+        if obj:handle(output, {event, table.unpack(args)}) then
             return true
         end
     end

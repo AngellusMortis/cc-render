@@ -373,7 +373,7 @@ function ProgressBar:handle(output, event, ...)
         self:render(output)
         return true
     end
-    ProgressBar.super.handle(self, output, {event, unpack(args)})
+    ProgressBar.super.handle(self, output, {event, table.unpack(args)})
     return false
 end
 

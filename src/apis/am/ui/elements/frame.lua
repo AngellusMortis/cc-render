@@ -687,7 +687,7 @@ function Frame:handle(output, event, ...)
     elseif self.scrollBar then
         if self.scrollFrame ~= nil then
             if event ~= "mouse_scroll" then
-                if self.scrollFrame:handle(output, {event, unpack(args)}) then
+                if self.scrollFrame:handle(output, {event, table.unpack(args)}) then
                     return true
                 end
             end
@@ -696,7 +696,7 @@ function Frame:handle(output, event, ...)
 
     local frameScreen = self:makeScreen(output)
     for _, obj in pairs(self.i) do
-        if obj:handle(frameScreen, {event, unpack(args)}) then
+        if obj:handle(frameScreen, {event, table.unpack(args)}) then
             return true
         end
     end

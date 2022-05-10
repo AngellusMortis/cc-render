@@ -84,7 +84,7 @@ function Screen:handle(event, ...)
     if c.l.Events.Always[event] then
         output = self.output
     else
-        output = h.getEventOutput({event, unpack(args)})
+        output = h.getEventOutput({event, table.unpack(args)})
         if not c.l.Events.UI[event] and not h.isSameScreen(self.output, output) then
             return false
         end
@@ -93,7 +93,7 @@ function Screen:handle(event, ...)
     if c.l.Events.UI[event] then
         local obj = self:get(args[1].objId)
         if obj ~= nil then
-            if obj:handle({event, unpack(args)}) then
+            if obj:handle({event, table.unpack(args)}) then
                 return true
             end
         end
@@ -107,7 +107,7 @@ function Screen:handle(event, ...)
     end
 
     for _, obj in pairs(self.i) do
-        if obj:handle(output, {event, unpack(args)}) then
+        if obj:handle(output, {event, table.unpack(args)}) then
             return true
         end
     end

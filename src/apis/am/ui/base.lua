@@ -60,7 +60,7 @@ function UIBoundObject:handle(event, ...)
     local event, args = core.cleanEventArgs(event, ...)
     v.expect(1, event, "string")
 
-    return self.obj:handle(self.output, {event, unpack(args)})
+    return self.obj:handle(self.output, {event, table.unpack(args)})
 end
 
 ---@class am.ui.b.UIObject.opt

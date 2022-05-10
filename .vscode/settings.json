@@ -1,7 +1,4 @@
 {
-    "Lua.diagnostics.disable": [
-        "err-esc"
-    ],
     "Lua.diagnostics.severity": {
         "redefined-local": "Warning"
     },
@@ -38,10 +35,16 @@
         "_CC_DEFAULT_SETTINGS",
         "_HOST",
         "_VERSION",
-        "_"
+        "_",
+        "colony"
     ],
-    "Lua.runtime.version": "Lua 5.1",
+    "Lua.runtime.version": "Lua 5.2",
+    "Lua.diagnostics.libraryFiles": "Enable",
     "Lua.workspace.library": [
-        "${workspace}/../cc-updater/src/apis/"
+        "../cc-updater/src/apis/"
     ],
+    "Lua.IntelliSense.traceLocalSet": true,
+    "Lua.IntelliSense.traceReturn": true,
+    "Lua.IntelliSense.traceBeSetted": true,
+    "Lua.IntelliSense.traceFieldInject": true,
 }

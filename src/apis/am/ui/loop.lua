@@ -68,10 +68,10 @@ function UILoop:run(uiObj, ...)
         else
             for _, obj in ipairs(objs) do
                 if h.isUIScreen(obj) then
-                    if obj:handle({event, unpack(args)}) then
+                    if obj:handle({event, table.unpack(args)}) then
                         break
                     end
-                elseif output ~= nil and obj:handle(output, {event, unpack(args)})then
+                elseif output ~= nil and obj:handle(output, {event, table.unpack(args)})then
                     break
                 end
             end
