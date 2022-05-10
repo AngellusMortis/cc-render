@@ -5,7 +5,7 @@
     "apis/am/ui/event.lua": "a564fd6c628b18c4941ecbb9d59b068185a5974397f57419e23c876a2cba3f63",
     "apis/am/ui/elements/text.lua": "7bdaaaa3829991140b1250fcf13ecad22b4cafb148137d1d130e4a29e892fda6",
     "apis/am/ui/elements/tabbed_frame.lua": "74d7f699f413ba94d0f6cb5434512d480ae89315b70f063790c353dd0d7f94df",
-    "apis/am/ui/elements/frame.lua": "788766f7e2f48b02827e5ac533c014d2c0c1ac0cc948de14d7955214b82d12fe",
+    "apis/am/ui/elements/frame.lua": "a78d973a44cf80224836118b740b54075614a7c9b18696b862fc5892b19d36da",
     "apis/am/ui/elements/group.lua": "09fdbfbe265c8797a585e95be6c162e440879c1ac4eab9d8026f16abc2da6ef0",
     "apis/am/ui/elements/progress_bar.lua": "c7996da3ea324d83ebeeffccbccb9a2d7708642266ed234d1b68212045da88f3",
     "apis/am/ui/elements/screen.lua": "0720f29f804748d18aa5f0bf5a9824385505b69f504646d4ab4d38bb87ab1393",
