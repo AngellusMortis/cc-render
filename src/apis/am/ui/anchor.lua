@@ -196,7 +196,7 @@ local BottomLeft = Left:extend("am.ui.a.BottomLeft")
 a.BottomLeft = BottomLeft
 ---@param offsetAmount? number
 ---@return am.ui.a.BottomLeft
-function BottomLeft:init()
+function BottomLeft:init(offsetAmount)
     BottomLeft.super.init(self, 1, 1, offsetAmount)
     return self
 end

@@ -12,7 +12,6 @@ local Frame = require("am.ui.elements.frame")
 ---@class am.ui.BoundProgressBar:am.ui.BoundFrame
 ---@field obj am.ui.ProgressBar
 local BoundProgressBar = Frame.Bound:extend("am.ui.BoundGroup")
-bound.BoundProgressBar = BoundProgressBar
 
 ---@return string
 function BoundProgressBar:getLabelText()
@@ -168,7 +167,7 @@ end
 ---@param output cc.output
 ---@returns am.ui.BoundProgressBar
 function ProgressBar:bind(output)
-    return bound.BoundProgressBar(output, self)
+    return BoundProgressBar(output, self)
 end
 
 ---Recursively searches for UI Obj by id
