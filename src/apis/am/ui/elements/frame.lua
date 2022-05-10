@@ -80,6 +80,11 @@ function BoundFrame:within(x, y)
     return self.obj:within(self.output, x, y)
 end
 
+---@param amount number
+function BoundFrame:scroll(amount)
+    self.obj:scroll(self.output, amount)
+end
+
 ---@class am.ui.Frame.opt:am.ui.b.UIObject.opt
 ---@field width number|nil
 ---@field height number|nil
@@ -631,6 +636,7 @@ function Frame:render(output)
         sHeight = sHeight + self.padTop + self.padBottom
         self:renderScrollBar(output, width, sHeight, rHeight, pos.y)
     end
+
     Frame.super.render(self, frameScreen)
 
     output.setTextColor(oldTextColor)
