@@ -25,7 +25,8 @@ Some things that makes my library stand out a bit:
   * [Screen](#screen)
   * [UILoop](#uiloop)
 * [Elements](#elements)
-  * [Frames](#frames)
+  * [Frame](#frame)
+  * [Tabbed Frame](#tabbed-frame)
   * [Text](#text)
   * [Button](#button)
   * [Progress Bar](#progress-bar)
@@ -286,6 +287,27 @@ end
 ```
 
 [Go to top](#another-rendering-library)
+
+### Tabbed Frame
+
+A tabbed frame or just tabs is multiple frames you can switch between. Builtin navigation is still TBA, but you can create your own buttons and interface for switching tabs using the `setActive` method.
+
+```lua
+require(settings.get("ghu.base") .. "core/apis/ghu")
+ui = require("am.ui")
+
+tabs = ui.TabbedFrame(ui.a.Anchor(3, 4))
+
+tab1 = tabs.tabs[1] -- the initial frame that is created
+-- add stuff to tab1
+
+tab2 = tabs:createTab("tab2")
+--- add stuff to tab2
+
+tabs:render(term) -- tab1 will render
+tabs:setActive(2)
+tabs:render(term) -- tab2 will render
+```
 
 ### Text
 
