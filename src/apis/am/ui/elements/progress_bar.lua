@@ -9,11 +9,11 @@ local c = require("am.ui.const")
 local e = require("am.ui.event")
 local h = require("am.ui.helpers")
 local Text = require("am.ui.elements.text")
-local Frame, BoundFrame = require("am.ui.elements.frame")
+local Frame = require("am.ui.elements.frame")
 
 ---@class am.ui.BoundProgressBar:am.ui.BoundFrame
 ---@field obj am.ui.ProgressBar
-local BoundProgressBar = BoundFrame:extend("am.ui.BoundGroup")
+local BoundProgressBar = Frame.Bound:extend("am.ui.BoundGroup")
 bound.BoundProgressBar = BoundProgressBar
 
 ---@return string
@@ -61,6 +61,7 @@ end
 ---@field showProgress boolean
 ---@field showPercent boolean
 local ProgressBar = Frame:extend("am.ui.ProgressBar")
+ProgressBar.Bound = BoundProgressBar
 ---@param anchor am.ui.a.Anchor
 ---@param opt am.ui.ProgressBar.opt
 ---@return am.ui.ProgressBar

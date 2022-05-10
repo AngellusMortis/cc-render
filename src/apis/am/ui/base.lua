@@ -71,6 +71,7 @@ end
 ---@field visible boolean
 local UIObject = BaseObject:extend("am.ui.b.UIObject")
 b.UIObject = UIObject
+b.UIObject.Bound = UIBoundObject
 ---@param opt? am.ui.b.UIObject.opt
 ---@return am.ui.b.UIObject
 function UIObject:init(opt)

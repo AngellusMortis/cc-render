@@ -8,11 +8,11 @@ local a = require("am.ui.anchor")
 local c = require("am.ui.const")
 local e = require("am.ui.event")
 local h = require("am.ui.helpers")
-local Group, BoundGroup = require("am.ui.elements.group")
+local Group = require("am.ui.elements.group")
 
 ---@class am.ui.BoundFrame:am.ui.BoundGroup
 ---@field obj am.ui.Frame
-local BoundFrame = BoundGroup:extend("am.ui.BoundFrame")
+local BoundFrame = Group.Bound:extend("am.ui.BoundFrame")
 
 ---Gets background color for Frame
 ---@returns number
@@ -125,6 +125,7 @@ end
 ---@field scrollBarDisabledColor number
 ---@field currentScroll number
 local Frame = Group:extend("am.ui.Frame")
+Frame.Bound = BoundFrame
 ---@param anchor am.ui.a.Anchor
 ---@param opt am.ui.Frame.opt
 ---@return am.ui.Frame
@@ -764,4 +765,4 @@ function Frame:bind(output)
     return BoundFrame(output, self)
 end
 
-return Frame, BoundFrame
+return Frame

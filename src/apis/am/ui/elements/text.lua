@@ -29,6 +29,7 @@ end
 ---@field textColor number
 ---@field backgroundColor number
 local Text = b.UIObject:extend("am.ui.Text")
+Text.Bound = BoundText
 ---@param anchor am.ui.a.Anchor
 ---@param label string|string[]
 ---@param opt? am.ui.Text.opt
@@ -188,4 +189,4 @@ function Text:bind(output)
     return BoundText(output, self)
 end
 
-return Text, BoundText
+return Text

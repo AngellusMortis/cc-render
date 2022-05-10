@@ -10,11 +10,11 @@ local c = require("am.ui.const")
 local e = require("am.ui.event")
 local h = require("am.ui.helpers")
 local Text = require("am.ui.elements.text")
-local Frame, BoundFrame = require("am.ui.elements.frame")
+local Frame = require("am.ui.elements.frame")
 
 ---@class am.ui.BoundButton:am.ui.BoundFrame
 ---@field obj am.ui.Button
-local BoundButton = BoundFrame:extend("am.ui.BoundButton")
+local BoundButton = Frame.Bound:extend("am.ui.BoundButton")
 
 ---Updates label text
 ---@param label string
@@ -90,6 +90,7 @@ end
 ---@field activateHandlers fun(button:am.ui.Button, output:table, event:am.ui.e.ButtonActivateEvent)[]
 ---@field touchTimer number|nil
 local Button = Frame:extend("am.ui.Button")
+Button.Bound = BoundButton
 ---@param anchor am.ui.a.Anchor
 ---@param label string
 ---@param opt am.ui.Button.opt
@@ -381,4 +382,4 @@ function Button:bind(output)
     return bound.BoundButton(output, self)
 end
 
-return Button, BoundButton
+return Button

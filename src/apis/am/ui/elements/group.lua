@@ -45,6 +45,7 @@ end
 ---@class am.ui.Group:am.ui.b.UIObject
 ---@field i am.ui.b.UIObject[]
 local Group = b.UIObject:extend("am.ui.Group")
+Group.Bound = BoundGroup
 ---@param opt? am.ui.b.UIObject.opt
 ---@return am.ui.Group
 function Group:init(opt)
@@ -197,4 +198,4 @@ function Group:handle(output, event, ...)
     return false
 end
 
-return Group, BoundGroup
+return Group
