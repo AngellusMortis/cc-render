@@ -119,7 +119,10 @@ function Center:getXPos(output, width)
     elseif self.offset == c.Offset.Right then
         center = center + self.offsetAmount + 1
     end
-    return math.max(1, math.ceil(center) + 1)
+    if oWidth % 2 == 0 then
+        center = math.ceil(center)
+    end
+    return math.max(1, center + 1)
 end
 
 ---@class am.ui.a.Middle:am.ui.a.Center
