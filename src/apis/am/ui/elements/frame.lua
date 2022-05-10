@@ -1,6 +1,5 @@
 local v = require("cc.expect")
 
-require(settings.get("ghu.base") .. "core/apis/ghu")
 local core = require("am.core")
 
 local b = require("am.ui.base")
@@ -461,6 +460,8 @@ function Frame:makeScreen(output, pos, width, height, doPadding)
     return frameScreen:ccCompat()
 end
 
+---@param output cc.output
+---@param amount number
 function Frame:scroll(output, amount)
     local oldScroll = self.currentScroll
     local newScroll = self.currentScroll + amount

@@ -15,5 +15,6 @@ ui.Text = require("am.ui.elements.text")
 ui.Frame = require("am.ui.elements.frame")
 ui.Button = require("am.ui.elements.button")
 ui.ProgressBar = require("am.ui.elements.progress_bar")
+ui.TabbedFrame = require("am.ui.elements.tabbed_frame")
 
 return ui

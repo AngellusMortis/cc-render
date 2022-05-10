@@ -29,7 +29,8 @@ c.e.Events = {
     button_activate = "ui.button_activate",
     button_deactivate = "ui.button_deactivate",
     progress_label_update = "ui.progress_label_update",
-    progress_update = "ui.progress_update"
+    progress_update = "ui.progress_update",
+    tab_change = "ui.tab_change",
 }
 
 c.l = {}
@@ -64,7 +65,8 @@ c.l.Events.UI = {
     ["ui.button_activate"]=true,
     ["ui.button_deactivate"]=true,
     ["ui.progress_label_update"]=true,
-    ["ui.progress_update"]=true
+    ["ui.progress_update"]=true,
+    ["ui.tab_change"]=true,
 }
 
 return c

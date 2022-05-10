@@ -61,6 +61,7 @@ function UIEvent:init(name, output, objId)
         self.outputId = peripheral.getName(output)
     else
         output = h.getFrameScreen(output)
+        ---@cast output am.ui.FrameScreen
         self.outputType = "frame"
         self.outputId = output.frameId
     end
@@ -305,6 +306,29 @@ function FrameScrollEvent:init(output, objId, oldScroll, newScroll)
 
     self.oldScroll = oldScroll
     self.newScroll = newScroll
+    return self
+end
+
+---@class am.ui.e.TabChangedEvent:am.ui.e.UIEvent
+---@field oldIndex number
+---@field newIndex number
+local TabChangedEvent = UIEvent:extend("am.ui.e.TabChangedEvent")
+e.TabChangedEvent = TabChangedEvent
+---@param output cc.output
+---@param objId string
+---@param oldIndex number
+---@param newIndex number
+---@return am.ui.e.FrameScrollEvent
+function TabChangedEvent:init(output, objId, oldIndex, newIndex)
+    v.expect(1, output, "table")
+    v.expect(2, objId, "string")
+    v.expect(3, oldIndex, "number")
+    v.expect(4, newIndex, "number")
+    h.requireOutput(output)
+    TabChangedEvent.super.init(self, c.e.Events.tab_change, output, objId)
+
+    self.oldIndex = oldIndex
+    self.newIndex = newIndex
     return self
 end
 
