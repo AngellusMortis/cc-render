@@ -39,12 +39,12 @@
         "colony"
     ],
     "Lua.runtime.version": "Lua 5.2",
-    "Lua.diagnostics.libraryFiles": "Enable",
-    "Lua.workspace.library": [
-        "../cc-updater/src/apis/"
-    ],
     "Lua.IntelliSense.traceLocalSet": true,
     "Lua.IntelliSense.traceReturn": true,
     "Lua.IntelliSense.traceBeSetted": true,
     "Lua.IntelliSense.traceFieldInject": true,
+    "Lua.diagnostics.libraryFiles": "Enable",
+    "Lua.workspace.library": [
+        "../cc-updater/src/apis/"
+    ],
 }
