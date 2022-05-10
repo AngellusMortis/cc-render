@@ -13,6 +13,7 @@ local IDS = {}
 ---@class am.ui.b.BaseObject:lib.object
 local BaseObject = object:extend("am.ui.b.BaseObject")
 b.BaseObject = BaseObject
+---@return am.ui.b.BaseObject
 function BaseObject:init()
     BaseObject.super.init(self, {})
     getmetatable(self).__tostring = nil
@@ -25,6 +26,9 @@ end
 ---@field obj am.ui.b.UIObject
 local UIBoundObject = BaseObject:extend("am.ui.b.UIBoundObject")
 b.UIBoundObject = UIBoundObject
+---@param output cc.output
+---@param obj am.ui.b.UIObject
+---@return am.ui.b.UIBoundObject
 function UIBoundObject:init(output, obj)
     v.expect(1, output, "table")
     v.expect(2, obj, "table")
@@ -59,11 +63,16 @@ function UIBoundObject:handle(event, ...)
     return self.obj:handle(self.output, {event, unpack(args)})
 end
 
+---@class am.ui.b.UIObject.opt
+---@field id string|nil
+
 ---@class am.ui.b.UIObject:am.ui.b.BaseObject
 ---@field id string
 ---@field visible boolean
 local UIObject = BaseObject:extend("am.ui.b.UIObject")
 b.UIObject = UIObject
+---@param opt? am.ui.b.UIObject.opt
+---@return am.ui.b.UIObject
 function UIObject:init(opt)
     opt = opt or {}
     UIObject.super.init(self)
@@ -153,6 +162,16 @@ end
 ---@field backgroundColor number|nil
 local FrameScreen = BaseObject:extend("am.ui.FrameScreen")
 b.FrameScreen = FrameScreen
+---@param output cc.output
+---@param frameId string
+---@param basePos am.ui.b.ScreenPos
+---@param width number
+---@param height number
+---@param textColor? number
+---@param backgroundColor? number
+---@param currentScroll number
+---@param viewportHeight number
+---@return am.ui.FrameScreen
 function FrameScreen:init(output, frameId, basePos, width, height, textColor, backgroundColor, currentScroll, viewportHeight)
     FrameScreen.super.init(self)
     v.expect(1, output, "table")
@@ -200,7 +219,7 @@ end
 ---Returns a ComputerCraft compatible montior/term-like table
 ---
 ---Can be reverted with ui.h.getFrameScreen
----@return table
+---@return cc.output
 function FrameScreen:ccCompat()
     local screen = {}
     screen._frameScreenRef = self

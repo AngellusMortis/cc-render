@@ -11,6 +11,9 @@ local a = {}
 ---@field y number
 local Anchor = b.BaseObject:extend("am.ui.a.Anchor")
 a.Anchor = Anchor
+---@param x number
+---@param y number
+---@return am.ui.a.Anchor
 function Anchor:init(x, y)
     Anchor.super.init(self)
     v.expect(1, x, "number")
@@ -45,6 +48,8 @@ end
 ---@class am.ui.a.Left:am.ui.a.Anchor
 local Left = Anchor:extend("am.ui.a.Left")
 a.Left = Left
+---@param y number
+---@return am.ui.a.Left
 function Left:init(y)
     v.expect(1, y, "number")
     v.range(y, 1)
@@ -55,6 +60,8 @@ end
 ---@class am.ui.a.Right:am.ui.a.Anchor
 local Right = Anchor:extend("am.ui.a.Right")
 a.Right = Right
+---@param y number
+---@return am.ui.a.Right
 function Right:init(y)
     v.expect(1, y, "number")
     v.range(y, 1)
@@ -76,6 +83,10 @@ end
 ---@field offsetAmount number
 local Center = Anchor:extend("am.ui.a.Center")
 a.Center = Center
+---@param y number
+---@param offset number ui.c.Offset.Left or ui.c.Offset.Right
+---@param offsetAmount number
+---@return am.ui.a.Center
 function Center:init(y, offset, offsetAmount)
     v.expect(1, y, "number")
     v.expect(2, offset, "number", "nil")
@@ -108,12 +119,13 @@ function Center:getXPos(output, width)
     elseif self.offset == c.Offset.Right then
         center = center + self.offsetAmount + 1
     end
-    return math.max(1, math.floor(center) + 1)
+    return math.max(1, math.ceil(center) + 1)
 end
 
 ---@class am.ui.a.Middle:am.ui.a.Center
 local Middle = Center:extend("am.ui.a.Middle")
 a.Middle = Middle
+---@return am.ui.a.Middle
 function Middle:init()
     Middle.super.init(self, 1)
     return self
@@ -131,6 +143,9 @@ end
 ---@class am.ui.a.Top:am.ui.a.Center
 local Top = Center:extend("am.ui.a.Top")
 a.Top = Top
+---@param offset number ui.c.Offset.Left or ui.c.Offset.Right
+---@param offsetAmount number
+---@return am.ui.a.Top
 function Top:init(offset, offsetAmount)
     v.expect(1, offset, "number", "nil")
     v.expect(2, offsetAmount, "number", "nil")
@@ -144,6 +159,9 @@ end
 ---@class am.ui.a.Bottom:am.ui.a.Center
 local Bottom = Center:extend("am.ui.a.Bottom")
 a.Bottom = Bottom
+---@param offset number ui.c.Offset.Left or ui.c.Offset.Right
+---@param offsetAmount number
+---@return am.ui.a.Bottom
 function Bottom:init(offset, offsetAmount)
     v.expect(1, offset, "number", "nil")
     v.expect(2, offsetAmount, "number", "nil")
@@ -166,6 +184,7 @@ end
 ---@class am.ui.a.TopLeft:am.ui.a.Anchor
 local TopLeft = Anchor:extend("am.ui.a.TopLeft")
 a.TopLeft = TopLeft
+---@return am.ui.a.TopLeft
 function TopLeft:init()
     TopLeft.super.init(self, 1, 1)
     return self
@@ -174,6 +193,7 @@ end
 ---@class am.ui.a.TopRight:am.ui.a.Right
 local TopRight = Right:extend("am.ui.a.TopRight")
 a.TopRight = TopRight
+---@return am.ui.a.TopRight
 function TopRight:init()
     TopRight.super.init(self, 1, 1)
     return self
@@ -182,6 +202,7 @@ end
 ---@class am.ui.a.BottomLeft:am.ui.a.Anchor
 local BottomLeft = Anchor:extend("am.ui.a.BottomLeft")
 a.BottomLeft = BottomLeft
+---@return am.ui.a.BottomLeft
 function BottomLeft:init()
     BottomLeft.super.init(self, 1, 1)
     return self
@@ -199,6 +220,7 @@ end
 ---@class am.ui.a.BottomRight:am.ui.a.BottomLeft
 local BottomRight = BottomLeft:extend("am.ui.a.BottomRight")
 a.BottomRight = BottomRight
+---@return am.ui.a.BottomRight
 function BottomRight:init()
     BottomRight.super.init(self)
     return self

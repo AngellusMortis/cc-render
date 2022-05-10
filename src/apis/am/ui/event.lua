@@ -10,6 +10,8 @@ local e = {}
 ---@field name string
 local BaseEvent = b.BaseObject:extend("am.ui.e.BaseEvent")
 e.BaseEvent = BaseEvent
+---@param name string
+---@return am.ui.e.BaseEvent
 function BaseEvent:init(name)
     v.expect(1, name, "string")
     BaseEvent.super.init(self)
@@ -22,6 +24,8 @@ end
 ---@field loopId string
 local LoopCancelEvent = BaseEvent:extend("am.ui.e.LoopCancelEvent")
 e.LoopCancelEvent = LoopCancelEvent
+---@param loopId string
+---@return am.ui.e.LoopCancelEvent
 function LoopCancelEvent:init(loopId)
     v.expect(1, loopId, "string")
     LoopCancelEvent.super.init(self, c.e.Events.loop_cancel)
@@ -37,6 +41,10 @@ end
 ---@field outputId string|nil
 local UIEvent = BaseEvent:extend("am.ui.e.UIEvent")
 e.UIEvent = UIEvent
+---@param name string
+---@param output cc.output
+---@param objId string
+---@return am.ui.e.UIEvent
 function UIEvent:init(name, output, objId)
     v.expect(1, name, "string")
     v.expect(2, output, "table")
@@ -65,6 +73,11 @@ end
 ---@field newLabel string|string[]
 local TextUpdateEvent = UIEvent:extend("am.ui.e.TextUpdateEvent")
 e.TextUpdateEvent = TextUpdateEvent
+---@param output cc.output
+---@param objId string
+---@param oldLabel string
+---@param newLabel string
+---@return am.ui.e.TextUpdateEvent
 function TextUpdateEvent:init(output, objId, oldLabel, newLabel)
     v.expect(1, output, "table")
     v.expect(2, objId, "string")
@@ -87,6 +100,9 @@ end
 ---@field newShowPercent boolean|nil
 local ProgressBarLabelUpdateEvent = UIEvent:extend("am.ui.e.ProgressBarLabelUpdateEvent")
 e.ProgressBarLabelUpdateEvent = ProgressBarLabelUpdateEvent
+---@param output cc.output
+---@param objId string
+---@return am.ui.e.ProgressBarLabelUpdateEvent
 function ProgressBarLabelUpdateEvent:init(output, objId)
     v.expect(1, output, "table")
     v.expect(2, objId, "string")
@@ -109,6 +125,11 @@ end
 ---@field newCurrent number
 local ProgressBarUpdateEvent = UIEvent:extend("am.ui.e.ProgressBarUpdateEvent")
 e.ProgressBarUpdateEvent = ProgressBarUpdateEvent
+---@param output cc.output
+---@param objId string
+---@param oldCurrent number
+---@param newCurrent number
+---@return am.ui.e.ProgressBarUpdateEvent
 function ProgressBarUpdateEvent:init(output, objId, oldCurrent, newCurrent)
     v.expect(1, output, "table")
     v.expect(2, objId, "string")
@@ -117,7 +138,7 @@ function ProgressBarUpdateEvent:init(output, objId, oldCurrent, newCurrent)
         self, c.e.Events.progress_update, output, objId
     )
 
-    self.oldCurrent = nil
+    self.oldCurrent = oldCurrent
     self.newCurrent = newCurrent
     return self
 end
@@ -126,6 +147,10 @@ end
 ---@field touch boolean
 local ButtonActivateEvent = UIEvent:extend("am.ui.e.ButtonActivateEvent")
 e.ButtonActivateEvent = ButtonActivateEvent
+---@param output cc.output
+---@param objId string
+---@param touch boolean
+---@return am.ui.e.ButtonActivateEvent
 function ButtonActivateEvent:init(output, objId, touch)
     v.expect(1, output, "table")
     v.expect(2, objId, "string")
@@ -143,6 +168,9 @@ end
 ---@class am.ui.e.ButtonDeactivateEvent:am.ui.e.UIEvent
 local ButtonDeactivateEvent = UIEvent:extend("am.ui.ButtonDeactivateEvent")
 e.ButtonDeactivateEvent = ButtonDeactivateEvent
+---@param output cc.output
+---@param objId string
+---@return am.ui.e.ButtonDeactivateEvent
 function ButtonDeactivateEvent:init(output, objId)
     v.expect(1, output, "table")
     v.expect(2, objId, "string")
@@ -158,6 +186,13 @@ end
 ---@field clickArea number
 local FrameActivateEvent = UIEvent:extend("am.ui.e.FrameActivateEvent")
 e.FrameActivateEvent = FrameActivateEvent
+---@param name string
+---@param output cc.output
+---@param objId string
+---@param x number
+---@param y number
+---@param clickArea number ui.c.ClickArea.Screen, ui.c.ClickArea.Padding, or ui.c.ClickArea.Border
+---@return am.ui.e.ButtonDeactivateEvent
 function FrameActivateEvent:init(name, output, objId, x, y, clickArea)
     v.expect(1, name, "string")
     v.expect(2, output, "table")
@@ -178,6 +213,12 @@ end
 ---@class am.ui.e.FrameTouchEvent:am.ui.e.FrameActivateEvent
 local FrameTouchEvent = FrameActivateEvent:extend("am.ui.e.FrameTouchEvent")
 e.FrameTouchEvent = FrameTouchEvent
+---@param output cc.output
+---@param objId string
+---@param x number
+---@param y number
+---@param clickArea number ui.c.ClickArea.Screen, ui.c.ClickArea.Padding, or ui.c.ClickArea.Border
+---@return am.ui.e.FrameTouchEvent
 function FrameTouchEvent:init(output, objId, x, y, clickArea)
     v.expect(1, objId, "string")
     v.expect(2, output, "table")
@@ -195,6 +236,12 @@ end
 ---@field clickType number
 local FrameClickEvent = FrameActivateEvent:extend("am.ui.e.FrameClickEvent")
 e.FrameClickEvent = FrameClickEvent
+---@param output cc.output
+---@param objId string
+---@param x number
+---@param y number
+---@param clickArea number ui.c.ClickArea.Screen, ui.c.ClickArea.Padding, or ui.c.ClickArea.Border
+---@return am.ui.e.FrameClickEvent
 function FrameClickEvent:init(output, objId, x, y, clickArea, clickType)
     v.expect(1, output, "table")
     v.expect(2, objId, "string")
@@ -215,6 +262,13 @@ end
 ---@field clickType number
 local FrameDeactivateEvent = FrameActivateEvent:extend("am.ui.e.FrameDeactivateEvent")
 e.FrameDeactivateEvent = FrameDeactivateEvent
+---@param output cc.output
+---@param objId string
+---@param x number
+---@param y number
+---@param clickArea number ui.c.ClickArea.Screen, ui.c.ClickArea.Padding, or ui.c.ClickArea.Border
+---@param clickType number clickType from mouse_click OS event
+---@return am.ui.e.FrameDeactivateEvent
 function FrameDeactivateEvent:init(output, objId, x, y, clickArea, clickType)
     v.expect(1, output, "table")
     v.expect(2, objId, "string")
@@ -236,6 +290,11 @@ end
 ---@field newScroll number
 local FrameScrollEvent = UIEvent:extend("am.ui.e.FrameScrollEvent")
 e.FrameScrollEvent = FrameScrollEvent
+---@param output cc.output
+---@param objId string
+---@param oldScroll number
+---@param newScroll number
+---@return am.ui.e.FrameScrollEvent
 function FrameScrollEvent:init(output, objId, oldScroll, newScroll)
     v.expect(1, output, "table")
     v.expect(2, objId, "string")

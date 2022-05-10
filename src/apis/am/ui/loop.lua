@@ -9,6 +9,8 @@ local h = require("am.ui.helpers")
 ---@class am.ui.UILoop:am.ui.b.UIObject
 ---@field running boolean
 local UILoop = b.UIObject:extend("am.ui.UILoop")
+---@param id string
+---@return am.ui.UILoop
 function UILoop:init(id)
     v.expect(1, id, "string", "nil")
     UILoop.super.init(self, id)

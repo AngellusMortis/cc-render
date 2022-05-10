@@ -1,6 +1,6 @@
 local v = require("cc.expect")
 
-local ghu = require(settings.get("ghu.base") .. "core/apis/ghu")
+require(settings.get("ghu.base") .. "core/apis/ghu")
 local core = require("am.core")
 
 local text = {}
