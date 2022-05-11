@@ -76,10 +76,21 @@ end
 
 ---Raises error if not an UIObject
 ---@param obj table
-local function requireUIObject(obj)
+local function requireUIObject(index, obj)
     v.expect(1, obj, "table")
     if not is("am.ui.b.UIObject", obj) then
-        error("Not a UIObject")
+        local t = type(obj)
+        local name
+        local ok, info = pcall(debug.getinfo, 3, "nS")
+        if ok and info.name and info.name ~= "" and info.what ~= "C" then
+            name = info.name
+        end
+
+        if name then
+            error(("bad argument #%d to '%s' (expected UIObject, got %s)"):format(index, name, t), 3)
+        else
+            error(("bad argument #%d (expected UIObject, got %s)"):format(index, t), 3)
+        end
     end
 end
 

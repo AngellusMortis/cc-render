@@ -33,7 +33,7 @@ function UIBoundObject:init(output, obj)
     v.expect(1, output, "table")
     v.expect(2, obj, "table")
     h.requireOutput(output)
-    h.requireUIObject(obj)
+    h.requireUIObject(2, obj)
     UIBoundObject.super.init(self)
 
     self.output = output

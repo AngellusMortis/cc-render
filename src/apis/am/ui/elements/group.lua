@@ -61,7 +61,7 @@ end
 function Group:add(obj)
     v.expect(1, obj, "table")
 
-    h.requireUIObject(obj)
+    h.requireUIObject(1, obj)
     if h.isUIScreen(obj) then
         error("Cannot nest Screen UIs")
     end
