@@ -83,10 +83,13 @@ function Text:handle(output, event, ...)
 
     if c.l.Events.UI[event] and args[1].objId == self.id then
         if event == c.e.Events.text_update then
-            local oldLabel = args[1].oldLabel
-            local newLabel = args[1].newLabel
-            if #newLabel < #oldLabel then
-                self.label = string.rep(" ", #oldLabel)
+            local oldLabel, oldMaxWidth = self:getLines(args[1].oldLabel)
+            local newLabel, newMaxWidth = self:getLines(args[1].newLabel)
+            if newMaxWidth < oldMaxWidth then
+                self.label = {}
+                for i = 1, #oldLabel, 1 do
+                    self.label[i] = string.rep(" ", oldMaxWidth)
+                end
                 local oldBackgroundColor = self.backgroundColor
                 local oldTextColor = self.textColor
                 self.backgroundColor = output.getBackgroundColor()
@@ -95,7 +98,7 @@ function Text:handle(output, event, ...)
                 self.backgroundColor = oldBackgroundColor
                 self.textColor = oldTextColor
             end
-            self.label = newLabel
+            self.label = args[1].newLabel
             self:render(output)
             return true
         end
@@ -107,13 +110,18 @@ end
 --- @field text string
 --- @field color number|nil
 
+---@param label? string|string[]
 ---@return am.ui.linedef[], number
-function Text:getLines()
+function Text:getLines(label)
     local lines
-    if type(self.label) == "string" then
-        lines = {self.label}
+    if label == nil then
+        label = self.label
+    end
+
+    if type(label) == "string" then
+        lines = {label}
     else
-        lines = core.copy(self.label)
+        lines = core.copy(label)
     end
 
     local maxWidth = 0
@@ -172,7 +180,21 @@ function Text:update(output, label)
     v.expect(2, label, "string", "table")
     h.requireOutput(output)
 
-    if self.label ~= label then
+    local changed = false
+    if type(label) == "string" then
+        changed = self.label ~= label
+    elseif type(label) ~= type(self.label) or #label ~= #self.label then
+        changed = true
+    else
+        for i, line in ipairs(self.label) do
+            if line ~= label[i] then
+                changed = true
+                break
+            end
+        end
+    end
+
+    if changed then
         -- TextUpdate event is used instead of re-rendering directly to allow parent objects
         --  to capture the update and handle it themselves
         local event = e.TextUpdateEvent(output, self.id, self.label, label)
