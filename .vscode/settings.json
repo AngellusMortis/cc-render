@@ -1,6 +1,6 @@
 {
     "Lua.diagnostics.severity": {
-        "redefined-local": "Warning"
+        "redefined-local": "Warning",
     },
     "Lua.diagnostics.globals": [
         "printError",
@@ -39,6 +39,11 @@
         "colony"
     ],
     "Lua.runtime.version": "Lua 5.2",
+    "Lua.workspace.ignoreDir": [
+        ".vscode",
+        "hmac.lua",
+        "*.min.lua"
+    ],
     "Lua.IntelliSense.traceLocalSet": true,
     "Lua.IntelliSense.traceReturn": true,
     "Lua.IntelliSense.traceBeSetted": true,
