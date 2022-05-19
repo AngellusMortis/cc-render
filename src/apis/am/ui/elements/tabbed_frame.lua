@@ -42,7 +42,7 @@ end
 ---@param lookup number|string
 ---@return am.ui.BoundFrame
 function BoundTabbedFrame:getTab(lookup)
-    return self.obj:getTab(self.output, lookup)
+    return self.obj:getTab(lookup, self.output)
 end
 
 ---@return am.ui.BoundFrame
@@ -136,15 +136,19 @@ function TabbedFrame:createTab(id, output)
     end
 
     local anchor = a.Anchor(1, 1)
+    local height = self.height
     if self.labelFrame ~= nil then
         anchor.y = 2
+        if height ~= nil then
+            height = height - 1
+        end
     end
     local index = #self.tabs + 1
     local tabId = string.format("%s.%s", self.id, id)
     local tab = Frame(anchor, {
         id=tabId,
         width=self.width,
-        height=self.height,
+        height=height,
         fillHorizontal=self.fillHorizontal,
         fillVertical=self.fillVertical,
         padLeft=self.padLeft,
@@ -197,7 +201,7 @@ function TabbedFrame:getIndex(lookup)
     local index = nil
     --- @cast index number|nil
     if type(lookup) == "number" then
-        v.range(index, 1, #self.tabs)
+        v.range(lookup, 1, #self.tabs)
         index = lookup
     else
         index = self.tabIdMap[lookup]
@@ -304,13 +308,13 @@ end
 ---@param output cc.output
 ---@return am.ui.BoundFrame
 function TabbedFrame:getActive(output)
-    return self:getTab(output, self.active)
+    return self:getTab(self.active, output)
 end
 
 ---@param output cc.output
 ---@param lookup number|string
 function TabbedFrame:setActive(output, lookup)
-    v.expect(1, lookup, "number", "string")
+    v.expect(2, lookup, "number", "string")
     local index = self:getIndex(lookup)
 
     for tabIndex, tab in ipairs(self.tabs) do
@@ -324,7 +328,7 @@ function TabbedFrame:setActive(output, lookup)
         end
     end
     if output ~= nil then
-        local event = e.TabChangedEvent(output, self.id, self.active, index)
+        local event = e.TabChangedEvent(output, self.id, self.tabIndexIdMap[self.active], self.tabIndexIdMap[index])
         os.queueEvent(event.name, event)
     end
     self.active = index
@@ -422,32 +426,6 @@ function TabbedFrame:get(id, output)
 end
 
 ---@param output cc.output
----@param pos? am.ui.b.ScreenPos
----@param width? number
----@param height? number
----@param doPadding? boolean
----@return am.ui.FrameScreenCompat
-function TabbedFrame:makeScreen(output, pos, width, height, doPadding)
-    local tab = self:getActive(output)
-    return tab:makeScreen(pos, width, height, doPadding)
-end
-
----@param output cc.output
----@param amount number
-function TabbedFrame:scroll(output, amount)
-    local tab = self:getActive(output)
-    return tab:scroll(amount)
-end
-
----@param x number
----@param y number
----@return boolean
-function TabbedFrame:within(output, x, y)
-    local tab = self:getActive(output)
-    return tab:within(x, y)
-end
-
----@param output cc.output
 ---@param event string Event name
 ---@vararg any
 ---@returns boolean event canceled
@@ -455,16 +433,20 @@ function TabbedFrame:handle(output, event, ...)
     ---@diagnostic disable-next-line: redefined-local
     local event, args = core.cleanEventArgs(event, ...)
 
-    if event == e.c.Event.tab_created or event == e.c.Event.tab_removed or event == e.c.Event.tab_label_update then
+    if event == c.e.Events.tab_created or event == c.e.Events.tab_removed or event == c.e.Events.tab_label_update then
         self:renderTabs(output)
     elseif event == c.e.Events.tab_change then
-        self:setActive(nil, args[1].newIndex)
+        self:setActive(nil, args[1].newTabId)
         self:render(output)
         return true
     end
 
-    if self.labelFrame:handle(output, event, table.unpack(args)) then
+    if self.labelFrame ~= nil and self.labelFrame:handle(output, event, table.unpack(args)) then
         return true
+    end
+
+    if output ~= nil then
+        output = self:makeScreen(output)
     end
 
     for _, tab in ipairs(self.tabs) do
