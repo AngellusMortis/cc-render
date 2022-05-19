@@ -169,7 +169,7 @@ function TabbedFrame:createTab(id, output)
     })
 
     if self.labelFrame ~= nil then
-        local labelButton = Button(a.Anchor(1, 1), {
+        local labelButton = Button(a.Anchor(1, 1), "", {
             id=tabId .. "Label"
         })
         local tabs = self
