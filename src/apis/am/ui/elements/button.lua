@@ -215,7 +215,7 @@ function Button:deactivate(output)
 end
 
 ---Adds event handler for when button is acitvated
----@param handler fun(button:am.ui.Button, output:table, event:am.ui.e.ButtonActivateEvent)
+---@param handler fun(button:am.ui.Button, output:cc.output, event:am.ui.e.ButtonActivateEvent)
 ---@return fun() Unsubcribe method
 function Button:addActivateHandler(handler)
     v.expect(1, handler, "function")

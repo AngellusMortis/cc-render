@@ -11,6 +11,7 @@ local c = require("am.ui.const")
 
 ---@class am.ui.BoundTabbedFrame:am.ui.BoundFrame
 ---@field obj am.ui.TabbedFrame
+---@field add nil
 local BoundTabbedFrame = Frame.Bound:extend("am.ui.BoundTabbedFrame")
 
 ---@param id string
@@ -61,7 +62,6 @@ end
 
 ---@class am.ui.TabbedFrame:am.ui.Frame
 ---@field i nil
----@field get nil
 ---@field add nil
 ---@field tabs am.ui.Frame[]
 ---@field labelFrame am.ui.Frame|nil
@@ -159,9 +159,17 @@ function TabbedFrame:createTab(id, output)
     })
 
     if self.labelFrame ~= nil then
-        self.labelFrame:add(Button(a.Anchor(1, 1), {
+        local labelButton = Button(a.Anchor(1, 1), {
             id=tabId .. "Label"
-        }))
+        })
+        local tabs = self
+        ---@diagnostic disable-next-line: redefined-local
+        labelButton:addActivateHandler(function(button, output)
+            -- labelFrame FrameScreen -> tabs FrameScreen -> output
+            output = h.getFrameScreen(h.getFrameScreen(output).output).output
+            tabs:setActive(output, id)
+        end)
+        self.labelFrame:add(labelButton)
     end
 
     tab:setVisible(false)
@@ -378,8 +386,16 @@ function TabbedFrame:get(id, output)
         h.requireOutput(output)
     end
 
-    if id == self.id then
+    if id == self.id or (self.labelFrame ~= nil and id == self.labelFrame.id) then
         return self:bind(output)
+    end
+
+    if output ~= nil then
+        output = self:makeScreen(output)
+    end
+
+    if self.labelFrame ~= nil and self.labelFrame.i[id] ~= nil then
+        return self.labelFrame:bind(output)
     end
 
     for _, tab in ipairs(self.tabs) do
@@ -433,6 +449,10 @@ function TabbedFrame:handle(output, event, ...)
     elseif event == c.e.Events.tab_change then
         self:setActive(nil, args[1].newIndex)
         self:render(output)
+        return true
+    end
+
+    if self.labelFrame:handle(output, event, table.unpack(args)) then
         return true
     end
 
