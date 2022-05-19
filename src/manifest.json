@@ -13,7 +13,7 @@
     "apis/am/ui/elements/frame.lua": "a78d973a44cf80224836118b740b54075614a7c9b18696b862fc5892b19d36da",
     "apis/am/ui/elements/group.lua": "1d71efd47ea3284d96dddc73dd69da438e657474d54dfde191ef25460ca7cbc5",
     "apis/am/ui/elements/button.lua": "55c36a1b74863504f3a29cce66c6cebd4abbeed990553b2704c3a78620b1cfb5",
-    "apis/am/ui/elements/tabbed_frame.lua": "dccc6b8e0a749dcb4a4f702698511d9589a564de40044ca35fe6629a51dcd4c8",
+    "apis/am/ui/elements/tabbed_frame.lua": "7fee71e2417f4e5649ba0d754307fe187a39aa378f02a693548d35984617e4a1",
     "apis/am/ui/elements/text.lua": "744b3a49a0312a31a5a9a176f432f18f28c7e8b2ad26ac08603ae69fceec03b2",
     "apis/am/text.lua": "ca76c855a4ec66a035607ee747922beb50401205cd8d9e0503ed7f38bbb38121"
   },
