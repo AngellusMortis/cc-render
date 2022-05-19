@@ -26,6 +26,12 @@ function BoundTabbedFrame:getIndex(lookup)
     return self.obj:getIndex(lookup)
 end
 
+---@param lookup string|number
+---@return am.ui.Frame
+function BoundTabbedFrame:removeTab(lookup)
+    return self.obj:removeTab(lookup)
+end
+
 ---@param lookup number|string
 ---@param label string
 ---@return am.ui.BoundFrame
@@ -272,10 +278,12 @@ function TabbedFrame:setLabel(output, lookup, label)
     os.queueEvent(event.name, event)
 end
 
----@param output cc.output
 ---@param lookup number|string
----@return am.ui.BoundFrame
-function TabbedFrame:getTab(output, lookup)
+---@param output? cc.output
+---@return am.ui.BoundFrame|am.ui.Frame
+---@overload fun(lookup: number|string): am.ui.Frame
+---@overload fun(lookup: number|string, output: cc.output): am.ui.BoundFrame
+function TabbedFrame:getTab(lookup, output)
     v.expect(1, lookup, "number", "string")
     local index = self:getIndex(lookup)
     local tab = nil
@@ -287,7 +295,10 @@ function TabbedFrame:getTab(output, lookup)
         error("Could not find tab")
     end
     ---@cast tab am.ui.Frame
-    return tab:bind(self:makeScreen(output))
+    if output ~= nil then
+        return tab:bind(self:makeScreen(output))
+    end
+    return tab
 end
 
 ---@param output cc.output
