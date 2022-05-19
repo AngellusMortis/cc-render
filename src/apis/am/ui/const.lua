@@ -31,6 +31,9 @@ c.e.Events = {
     progress_label_update = "ui.progress_label_update",
     progress_update = "ui.progress_update",
     tab_change = "ui.tab_change",
+    tab_label_update = "ui.tab_label_update",
+    tab_created = "ui.tab_created",
+    tab_removed = "ui.tab_removed",
 }
 
 c.l = {}
@@ -67,6 +70,9 @@ c.l.Events.UI = {
     ["ui.progress_label_update"]=true,
     ["ui.progress_update"]=true,
     ["ui.tab_change"]=true,
+    ["ui.tab_label_update"]=true,
+    ["ui.tab_created"]=true,
+    ["ui.tab_removed"]=true,
 }
 
 return c

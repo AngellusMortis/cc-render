@@ -84,7 +84,7 @@ function Text:handle(output, event, ...)
     if c.l.Events.UI[event] and args[1].objId == self.id then
         if event == c.e.Events.text_update then
             local oldLabel, oldMaxWidth = self:getLines(args[1].oldLabel)
-            local newLabel, newMaxWidth = self:getLines(args[1].newLabel)
+            local _, newMaxWidth = self:getLines(args[1].newLabel)
             if newMaxWidth < oldMaxWidth then
                 self.label = {}
                 for i = 1, #oldLabel, 1 do

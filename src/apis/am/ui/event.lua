@@ -316,19 +316,83 @@ local TabChangedEvent = UIEvent:extend("am.ui.e.TabChangedEvent")
 e.TabChangedEvent = TabChangedEvent
 ---@param output cc.output
 ---@param objId string
----@param oldIndex number
----@param newIndex number
+---@param oldTabId string
+---@param newTabId string
 ---@return am.ui.e.FrameScrollEvent
-function TabChangedEvent:init(output, objId, oldIndex, newIndex)
+function TabChangedEvent:init(output, objId, oldTabId, newTabId)
     v.expect(1, output, "table")
     v.expect(2, objId, "string")
-    v.expect(3, oldIndex, "number")
-    v.expect(4, newIndex, "number")
+    v.expect(3, oldTabId, "string")
+    v.expect(4, newTabId, "string")
     h.requireOutput(output)
     TabChangedEvent.super.init(self, c.e.Events.tab_change, output, objId)
 
-    self.oldIndex = oldIndex
-    self.newIndex = newIndex
+    self.oldTabId = oldTabId
+    self.newTabId = newTabId
+    return self
+end
+
+---@class am.ui.e.TabCreatedEvent:am.ui.e.UIEvent
+---@field tabId string
+local TabCreatedEvent = UIEvent:extend("am.ui.e.TabCreatedEvent")
+e.TabChangedEvent = TabChangedEvent
+---@param output cc.output
+---@param objId string
+---@param tabId string
+---@return am.ui.e.FrameScrollEvent
+function TabCreatedEvent:init(output, objId, tabId)
+    v.expect(1, output, "table")
+    v.expect(2, objId, "string")
+    v.expect(3, tabId, "string")
+    h.requireOutput(output)
+    TabChangedEvent.super.init(self, c.e.Events.tab_created, output, objId)
+
+    self.tabId = tabId
+    return self
+end
+
+---@class am.ui.e.TabRemovedEvent:am.ui.e.UIEvent
+---@field tabId string
+local TabRemovedEvent = UIEvent:extend("am.ui.e.TabRemovedEvent")
+e.TabRemovedEvent = TabRemovedEvent
+---@param output cc.output
+---@param objId string
+---@param tabId string
+---@return am.ui.e.FrameScrollEvent
+function TabRemovedEvent:init(output, objId, tabId)
+    v.expect(1, output, "table")
+    v.expect(2, objId, "string")
+    v.expect(3, tabId, "string")
+    h.requireOutput(output)
+    TabRemovedEvent.super.init(self, c.e.Events.tab_removed, output, objId)
+
+    self.tabId = tabId
+    return self
+end
+
+---@class am.ui.e.TabLabelUpdatedEvent:am.ui.e.UIEvent
+---@field oldLabel string|string[]
+---@field newLabel string|string[]
+local TabLabelUpdatedEvent = UIEvent:extend("am.ui.e.TabLabelUpdatedEvent")
+e.TabLabelUpdatedEvent = TextUpdateEvent
+---@param output cc.output
+---@param objId string
+---@param tabId string
+---@param oldLabel string|nil
+---@param newLabel string
+---@return am.ui.e.TextUpdateEvent
+function TabLabelUpdatedEvent:init(output, objId, tabId, oldLabel, newLabel)
+    v.expect(1, output, "table")
+    v.expect(2, objId, "string")
+    v.expect(4, tabId, "string")
+    v.expect(4, oldLabel, "string", "nil")
+    v.expect(5, newLabel, "string", "nil")
+    h.requireOutput(output)
+    TextUpdateEvent.super.init(self, c.e.Events.tab_label_update, output, objId)
+
+    self.tabId = tabId
+    self.oldLabel = oldLabel
+    self.newLabel = newLabel
     return self
 end
 

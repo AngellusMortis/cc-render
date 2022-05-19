@@ -3,6 +3,8 @@ local v = require("cc.expect")
 local core = require("am.core")
 
 local Frame = require("am.ui.elements.frame")
+local Button = require("am.ui.elements.button")
+local a = require("am.ui.anchor")
 local h = require("am.ui.helpers")
 local e = require("am.ui.event")
 local c = require("am.ui.const")
@@ -17,10 +19,23 @@ function BoundTabbedFrame:createTab(id)
     return self.obj:createTab(id)
 end
 
----@param index number
+---@param lookup number|string
 ---@return am.ui.BoundFrame
-function BoundTabbedFrame:getTab(index)
-    return self.obj:getTab(self.output, index)
+function BoundTabbedFrame:getIndex(lookup)
+    return self.obj:getIndex(lookup)
+end
+
+---@param lookup number|string
+---@param label string
+---@return am.ui.BoundFrame
+function BoundTabbedFrame:setLabel(lookup, label)
+    return self.obj:setLabel(self.output, lookup, label)
+end
+
+---@param lookup number|string
+---@return am.ui.BoundFrame
+function BoundTabbedFrame:getTab(lookup)
+    return self.obj:getTab(self.output, lookup)
 end
 
 ---@return am.ui.BoundFrame
@@ -28,17 +43,28 @@ function BoundTabbedFrame:getActive()
     return self.obj:getActive(self.output)
 end
 
----@param index number
-function BoundTabbedFrame:setActive(index)
-    self.obj:setActive(self.output, index)
+---@param lookup number|string
+function BoundTabbedFrame:setActive(lookup)
+    self.obj:setActive(self.output, lookup)
+end
+
+function BoundTabbedFrame:renderTabs()
+    self.obj:renderTabs(self.output)
 end
 
 ---@class am.ui.TabbedFrame.opt:am.ui.Frame.opt
 ---@field primaryTabId string|nil
+---@field showTabs boolean|nil
+---@field tabBackgroundColor number|nil
+---@field tabFillColor number|nil
+---@field tabTextColor number|nil
 
 ---@class am.ui.TabbedFrame:am.ui.Frame
 ---@field i nil
+---@field get nil
+---@field add nil
 ---@field tabs am.ui.Frame[]
+---@field labelFrame am.ui.Frame|nil
 local TabbedFrame = Frame:extend("am.ui.Popup")
 ---@param anchor am.ui.a.Anchor
 ---@param opt am.ui.Frame.opt
@@ -48,24 +74,69 @@ function TabbedFrame:init(anchor, opt)
     opt = opt or {}
     v.expect(1, anchor, "table")
     v.field(opt, "primaryTabId", "string", "nil")
+    v.field(opt, "showTabs", "boolean", "nil")
+    v.field(opt, "tabBackgroundColor", "number", "nil")
+    v.field(opt, "activeTabFillColor", "number", "nil")
+    v.field(opt, "activeTabTextColor", "number", "nil")
+    v.field(opt, "tabFillColor", "number", "nil")
+    v.field(opt, "tabTextColor", "number", "nil")
     TabbedFrame.super.init(self, anchor, opt)
     if opt.primaryTabId == nil then
         opt.primaryTabId = "main"
     end
+    if opt.showTabs == nil then
+        opt.showTabs = false
+    end
+    if opt.activeTabFillColor == nil then
+        opt.activeTabFillColor = opt.tabFillColor
+    end
+    if opt.activeTabTextColor == nil then
+        opt.activeTabTextColor = opt.tabTextColor
+    end
 
     self.i = nil
     self.tabs = {}
+    self.tabIndexIdMap = {}
+    self.tabIdMap = {}
+    self.tabLabelMap = {}
+    self.tabIndexLabelMap = {}
+    self.tabBackgroundColor = opt.tabBackgroundColor
+    self.tabFillColor = opt.tabFillColor
+    self.tabTextColor = opt.tabTextColor
+    self.activeTabFillColor = opt.activeTabFillColor
+    self.activeTabTextColor = opt.activeTabTextColor
+    self.labelFrame = nil
+    if opt.showTabs then
+        self.labelFrame = Frame(a.TopLeft(), {
+            id=self.id .. ".labelFrame",
+            height=1,
+            border=0,
+            fillHorizontal=true,
+            fillColor=opt.tabBackgroundColor
+        })
+    end
     self:createTab(opt.primaryTabId)
     self:setActive(nil, 1)
     return self
 end
 
 ---@param id string
+---@param output? cc.output
 ---@return am.ui.Frame
-function TabbedFrame:createTab(id)
+function TabbedFrame:createTab(id, output)
+    if self.tabIdMap[id] ~= nil then
+        error(string.format("Tab with id %s already exists", id))
+        return
+    end
+
+    local anchor = a.Anchor(1, 1)
+    if self.labelFrame ~= nil then
+        anchor.y = 2
+    end
     local index = #self.tabs + 1
-    local tab = Frame(self.anchor, {
-        id=string.format("%s.%d.%s", self.id, index, id),
+    local tabId = string.format("%s.%s", self.id, id)
+    local tab = Frame(anchor, {
+        id=tabId,
         width=self.width,
         height=self.height,
         fillHorizontal=self.fillHorizontal,
@@ -86,19 +157,129 @@ function TabbedFrame:createTab(id)
         scrollBarTextColor=self.scrollBarTextColor,
         scrollBarDisabledColor=self.scrollBarDisabledColor
     })
+
+    if self.labelFrame ~= nil then
+        self.labelFrame:add(Button(a.Anchor(1, 1), {
+            id=tabId .. "Label"
+        }))
+    end
+
     tab:setVisible(false)
     self.tabs[index] = tab
+    self.tabIdMap[id] = index
+    self.tabIndexIdMap[index] = id
+
+    if output ~= nil then
+        local event = e.TabCreatedEvent(output, self.id, id)
+        os.queueEvent(event.name, event)
+    end
     return tab
 end
 
----@param output cc.output
----@return am.ui.BoundFrame
-function TabbedFrame:getTab(output, index)
-    v.expect(1, index, "number")
-    v.range(index, 1, #self.tabs)
+---@param lookup string|number
+---@return number|nil
+function TabbedFrame:getIndex(lookup)
+    v.expect(1, lookup, "number", "string")
+    local index = nil
+    --- @cast index number|nil
+    if type(lookup) == "number" then
+        v.range(index, 1, #self.tabs)
+        index = lookup
+    else
+        index = self.tabIdMap[lookup]
+    end
+    return index
+end
 
-    local tab = self.tabs[index]
-    return tab:bind(output)
+---@param lookup string|number
+---@param output? cc.output
+---@return number|nil
+function TabbedFrame:removeTab(lookup, output)
+    v.expect(1, lookup, "number", "string")
+    if #self.tabs == 1 then
+        error("Cannot remove last tab")
+    end
+
+    local tabIndex = self:getIndex(lookup)
+    local oldIdMap = self.tabIndexIdMap
+    local oldLabelMap = self.tabIndexLabelMap
+    local tabId = oldIdMap[tabIndex]
+
+    self.tabIndexIdMap = {}
+    self.tabIdMap = {}
+    self.tabLabelMap = {}
+    self.tabIndexLabelMap = {}
+
+    for index, id in ipairs(oldIdMap) do
+        if index ~= tabIndex then
+            local label = oldLabelMap[index]
+            if index > tabIndex then
+                index = index - 1
+            end
+            self.tabIndexIdMap[index] = id
+            self.tabIdMap[id] = index
+            self.tabLabelMap[label] = index
+            self.tabIndexLabelMap[id] = label
+        end
+    end
+
+    table.remove(self.tabs, tabIndex)
+
+    if output ~= nil then
+        local event = e.TabRemovedEvent(output, self.id, tabId)
+        os.queueEvent(event.name, event)
+    end
+    if tabIndex > #self.tabs then
+        if output ~= nil then
+            self:setActive(output, #self.tabs)
+        else
+            self.active = #self.tabs
+        end
+    end
+end
+
+---@param output cc.output
+---@param lookup string|number
+---@param label string
+---@return am.ui.Frame
+function TabbedFrame:setLabel(output, lookup, label)
+    v.expect(1, lookup, "number", "string")
+    v.expect(2, label, "string")
+    local index = self:getIndex(lookup)
+    if index == nil then
+        error("Could not find tab")
+    end
+    if self.tabLabelMap[label] ~= nil then
+        error(string.format("Label %s already exists", label))
+    end
+
+    local oldLabel = self.tabIndexLabelMap[index]
+    if oldLabel ~= nil then
+        self.tabLabelMap[oldLabel] = nil
+    end
+
+    self.tabLabelMap[label] = index
+    self.tabIndexLabelMap[index] = label
+    local event = e.TabLabelUpdatedEvent(output, self.id, self.tabIndexIdMap[index], oldLabel, label)
+    os.queueEvent(event.name, event)
+end
+
+---@param output cc.output
+---@param lookup number|string
+---@return am.ui.BoundFrame
+function TabbedFrame:getTab(output, lookup)
+    v.expect(1, lookup, "number", "string")
+    local index = self:getIndex(lookup)
+    local tab = nil
+    if index ~= nil then
+        tab = self.tabs[index]
+    end
+
+    if tab == nil then
+        error("Could not find tab")
+    end
+    ---@cast tab am.ui.Frame
+    return tab:bind(self:makeScreen(output))
 end
 
 ---@param output cc.output
@@ -108,10 +289,10 @@ function TabbedFrame:getActive(output)
 end
 
 ---@param output cc.output
----@param index number
-function TabbedFrame:setActive(output, index)
-    v.expect(1, index, "number")
-    v.range(index, 1, #self.tabs)
+---@param lookup number|string
+function TabbedFrame:setActive(output, lookup)
+    v.expect(1, lookup, "number", "string")
+    local index = self:getIndex(lookup)
 
     for tabIndex, tab in ipairs(self.tabs) do
         if tabIndex == index then
@@ -131,7 +312,7 @@ function TabbedFrame:setActive(output, index)
 end
 
 ---@param visible boolean
-function TabbedFrame:setVisible( visible)
+function TabbedFrame:setVisible(visible)
     v.expect(1, visible, "boolean")
     if visible then
         self:setActive(nil, self.active)
@@ -143,12 +324,46 @@ function TabbedFrame:setVisible( visible)
     self.visible = visible
 end
 
+---@param output cc.output
+function TabbedFrame:renderTabs(output)
+    if not self.visible then
+        return
+    end
+    if self.labelFrame == nil then
+        return
+    end
+
+    local offset = 1
+    local fillColor = h.getColor(self.tabFillColor, self.fillColor, output.getBackgroundColor())
+    local textColor = h.getColor(self.tabTextColor, self.textColor, output.getTextColor())
+    for index, id in ipairs(self.tabIndexIdMap) do
+        local labelText = self.tabIndexLabelMap[index] or id
+        local labelId = string.format("%s.%sLabel", self.id, id)
+        local label = self.labelFrame:get(labelId, output)
+        ---@cast label am.ui.BoundButton
+        label.obj.label.label = labelText
+        label.obj.anchor.x = offset
+        if index == self.active then
+            label.obj.fillColor = h.getColor(self.activeTabFillColor, fillColor)
+            label.obj.textColor = h.getColor(self.activeTabTextColor, textColor)
+        else
+            label.obj.fillColor = fillColor
+            label.obj.textColor = textColor
+        end
+        offset = #labelText + 2
+    end
+
+    local fs = self:makeScreen(output)
+    self.labelFrame:render(fs)
+end
+
 ---@param output? cc.output
 function TabbedFrame:render(output)
     if not self.visible then
         return
     end
 
+    self:renderTabs(output)
     local tab = self:getActive(output)
     tab:render()
 end
@@ -213,7 +428,9 @@ function TabbedFrame:handle(output, event, ...)
     ---@diagnostic disable-next-line: redefined-local
     local event, args = core.cleanEventArgs(event, ...)
 
-    if event == c.e.Events.tab_change then
+    if event == e.c.Event.tab_created or event == e.c.Event.tab_removed or event == e.c.Event.tab_label_update then
+        self:renderTabs(output)
+    elseif event == c.e.Events.tab_change then
         self:setActive(nil, args[1].newIndex)
         self:render(output)
         return true
