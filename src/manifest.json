@@ -12,8 +12,8 @@
     "apis/am/ui/elements/progress_bar.lua": "c7996da3ea324d83ebeeffccbccb9a2d7708642266ed234d1b68212045da88f3",
     "apis/am/ui/elements/frame.lua": "a78d973a44cf80224836118b740b54075614a7c9b18696b862fc5892b19d36da",
     "apis/am/ui/elements/group.lua": "1d71efd47ea3284d96dddc73dd69da438e657474d54dfde191ef25460ca7cbc5",
-    "apis/am/ui/elements/button.lua": "5ccd1f798538635cb82cd3ac0e29486479614367541886951fbd1abd06edf6f4",
-    "apis/am/ui/elements/tabbed_frame.lua": "1c81f503d9bda65dabe5211c24bf72044e3be33ca74c1f65f8a89f551ae98494",
+    "apis/am/ui/elements/button.lua": "55c36a1b74863504f3a29cce66c6cebd4abbeed990553b2704c3a78620b1cfb5",
+    "apis/am/ui/elements/tabbed_frame.lua": "b5803225607c8a4ad26fb0e3a7b2a93296e02b49812fd317e1fd91e40e8874a2",
     "apis/am/ui/elements/text.lua": "744b3a49a0312a31a5a9a176f432f18f28c7e8b2ad26ac08603ae69fceec03b2",
     "apis/am/text.lua": "ca76c855a4ec66a035607ee747922beb50401205cd8d9e0503ed7f38bbb38121"
   },
