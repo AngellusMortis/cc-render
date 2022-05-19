@@ -81,6 +81,10 @@ function TabbedFrame:init(anchor, opt)
     v.expect(1, anchor, "table")
     v.field(opt, "primaryTabId", "string", "nil")
     v.field(opt, "showTabs", "boolean", "nil")
+    v.field(opt, "tabPadLeft", "number", "nil")
+    v.field(opt, "tabPadRight", "number", "nil")
+    v.field(opt, "tabPadTop", "number", "nil")
+    v.field(opt, "tabPadBottom", "number", "nil")
     v.field(opt, "tabBackgroundColor", "number", "nil")
     v.field(opt, "activeTabFillColor", "number", "nil")
     v.field(opt, "activeTabTextColor", "number", "nil")
@@ -106,6 +110,10 @@ function TabbedFrame:init(anchor, opt)
     self.tabIdMap = {}
     self.tabLabelMap = {}
     self.tabIndexLabelMap = {}
+    self.tabPadLeft = opt.tabPadLeft
+    self.tabPadRight = opt.tabPadRight
+    self.tabPadTop = opt.tabPadTop
+    self.tabPadBottom = opt.tabPadBottom
     self.tabBackgroundColor = opt.tabBackgroundColor
     self.tabFillColor = opt.tabFillColor
     self.tabTextColor = opt.tabTextColor
@@ -115,8 +123,6 @@ function TabbedFrame:init(anchor, opt)
     if opt.showTabs then
         self.labelFrame = Frame(a.TopLeft(), {
             id=self.id .. ".labelFrame",
-            height=1,
-            border=0,
             fillHorizontal=true,
             fillColor=opt.tabBackgroundColor
         })
@@ -137,29 +143,36 @@ function TabbedFrame:createTab(id, output)
 
     local anchor = a.Anchor(1, 1)
     local height = self.height
+    local width = self.width
     if self.labelFrame ~= nil then
         anchor.y = 2
         if height ~= nil then
             height = height - 1
         end
     end
+    if self.width ~= nil then
+        width = width - self.padLeft - self.padRight
+        if self.border > 0 then
+            width = width - 1
+        end
+    end
     local index = #self.tabs + 1
     local tabId = string.format("%s.%s", self.id, id)
     local tab = Frame(anchor, {
         id=tabId,
-        width=self.width,
+        width=width,
         height=height,
         fillHorizontal=self.fillHorizontal,
         fillVertical=self.fillVertical,
-        padLeft=self.padLeft,
-        padRight=self.padRight,
-        padTop=self.padTop,
-        padBottom=self.padBottom,
+        padLeft=self.tabPadLeft,
+        padRight=self.tabPadRight,
+        padTop=self.tabPadTop,
+        padBottom=self.tabPadBottom,
         backgroundColor=self.backgroundColor,
         borderColor=self.borderColor,
         fillColor=self.fillColor,
         textColor=self.textColor,
-        border=self.border,
+        border=0,
         scrollBar=self.scrollBar,
         scrollBarTrackColor=self.scrollBarTrackColor,
         scrollBarColor=self.scrollBarColor,
@@ -170,7 +183,8 @@ function TabbedFrame:createTab(id, output)
 
     if self.labelFrame ~= nil then
         local labelButton = Button(a.Anchor(1, 1), "", {
-            id=tabId .. "Label"
+            id=tabId .. "Label",
+            border=0,
         })
         local tabs = self
         ---@diagnostic disable-next-line: redefined-local
@@ -356,6 +370,11 @@ function TabbedFrame:renderTabs(output)
         return
     end
 
+    self.labelFrame.border = 0
+    self.labelFrame.height = 1
+    self.labelFrame.fillColor = self.fillColor
+    self.labelFrame.backgroundColor = nil
+
     local offset = 1
     local fillColor = h.getColor(self.tabFillColor, self.fillColor, output.getBackgroundColor())
     local textColor = h.getColor(self.tabTextColor, self.textColor, output.getTextColor())
@@ -369,23 +388,25 @@ function TabbedFrame:renderTabs(output)
         if index == self.active then
             label.obj.fillColor = h.getColor(self.activeTabFillColor, fillColor)
             label.obj.textColor = h.getColor(self.activeTabTextColor, textColor)
+            label.obj.borderColor = fillColor
         else
             label.obj.fillColor = fillColor
             label.obj.textColor = textColor
+            label.obj.borderColor = h.getColor(self.activeTabFillColor, fillColor)
         end
-        offset = #labelText + 2
+        offset = offset + #labelText + 2
     end
 
     local fs = self:makeScreen(output)
     self.labelFrame:render(fs)
 end
 
----@param output? cc.output
+---@param output cc.output
 function TabbedFrame:render(output)
     if not self.visible then
         return
     end
-
+    TabbedFrame.super.render(self, output)
     self:renderTabs(output)
     local tab = self:getActive(output)
     tab:render()
@@ -440,20 +461,20 @@ function TabbedFrame:handle(output, event, ...)
         self:render(output)
         return true
     end
-
-    if self.labelFrame ~= nil and self.labelFrame:handle(output, event, table.unpack(args)) then
+    local frameScreen = nil
+    if output ~= nil then
+        frameScreen = self:makeScreen(output)
+    end
+    if self.labelFrame ~= nil and self.labelFrame:handle(frameScreen, event, table.unpack(args)) then
         return true
     end
 
-    if output ~= nil then
-        output = self:makeScreen(output)
-    end
-
     for _, tab in ipairs(self.tabs) do
-        if tab:handle(output, event, table.unpack(args)) then
+        if tab:handle(frameScreen, event, table.unpack(args)) then
             return true
         end
     end
+    TabbedFrame.super.handle(self, output, event, table.unpack(args))
     return false
 end
 

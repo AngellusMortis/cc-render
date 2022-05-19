@@ -162,8 +162,10 @@ function Group:render(output)
     local oldX, oldY = output.getCursorPos()
     Group.super.render(self, output)
 
-    for _, obj in pairs(self.i) do
-        obj:render(output)
+    if self.i ~= nil then
+        for _, obj in pairs(self.i) do
+            obj:render(output)
+        end
     end
 
     output.setTextColor(oldTextColor)
@@ -189,9 +191,11 @@ function Group:handle(output, event, ...)
         return false
     end
 
-    for _, obj in pairs(self.i) do
-        if obj:handle(output, {event, table.unpack(args)}) then
-            return true
+    if self.i ~= nil then
+        for _, obj in pairs(self.i) do
+            if obj:handle(output, {event, table.unpack(args)}) then
+                return true
+            end
         end
     end
     return false

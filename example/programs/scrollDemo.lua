@@ -12,8 +12,7 @@ else
 end
 
 local ui = require("am.ui")
-local width, height = output.getSize()
-local count = 0
+local width, _ = output.getSize()
 local loop = ui.UILoop()
 local s = ui.Screen(output, {textColor=colors.white, backgroundColor=colors.black})
 local scrollFrame = ui.Frame(ui.a.TopLeft(), {

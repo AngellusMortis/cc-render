@@ -260,7 +260,7 @@ a.BottomRight = BottomRight
 ---@param offsetAmount? number
 ---@return am.ui.a.BottomRight
 function BottomRight:init(offsetAmount)
-    BottomRight.super.init(self, offsetAmount)
+    BottomRight.super.init(self, 1, offsetAmount)
     return self
 end
 

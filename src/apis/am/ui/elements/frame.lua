@@ -703,9 +703,11 @@ function Frame:handle(output, event, ...)
     end
 
     local frameScreen = self:makeScreen(output)
-    for _, obj in pairs(self.i) do
-        if obj:handle(frameScreen, {event, table.unpack(args)}) then
-            return true
+    if self.i ~= nil then
+        for _, obj in pairs(self.i) do
+            if obj:handle(frameScreen, {event, table.unpack(args)}) then
+                return true
+            end
         end
     end
 

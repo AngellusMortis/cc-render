@@ -318,7 +318,7 @@ e.TabChangedEvent = TabChangedEvent
 ---@param objId string
 ---@param oldTabId string
 ---@param newTabId string
----@return am.ui.e.FrameScrollEvent
+---@return am.ui.e.TabChangedEvent
 function TabChangedEvent:init(output, objId, oldTabId, newTabId)
     v.expect(1, output, "table")
     v.expect(2, objId, "string")
@@ -335,17 +335,17 @@ end
 ---@class am.ui.e.TabCreatedEvent:am.ui.e.UIEvent
 ---@field tabId string
 local TabCreatedEvent = UIEvent:extend("am.ui.e.TabCreatedEvent")
-e.TabChangedEvent = TabChangedEvent
+e.TabCreatedEvent = TabCreatedEvent
 ---@param output cc.output
 ---@param objId string
 ---@param tabId string
----@return am.ui.e.FrameScrollEvent
+---@return am.ui.e.TabCreatedEvent
 function TabCreatedEvent:init(output, objId, tabId)
     v.expect(1, output, "table")
     v.expect(2, objId, "string")
     v.expect(3, tabId, "string")
     h.requireOutput(output)
-    TabChangedEvent.super.init(self, c.e.Events.tab_created, output, objId)
+    TabCreatedEvent.super.init(self, c.e.Events.tab_created, output, objId)
 
     self.tabId = tabId
     return self
@@ -358,7 +358,7 @@ e.TabRemovedEvent = TabRemovedEvent
 ---@param output cc.output
 ---@param objId string
 ---@param tabId string
----@return am.ui.e.FrameScrollEvent
+---@return am.ui.e.TabRemovedEvent
 function TabRemovedEvent:init(output, objId, tabId)
     v.expect(1, output, "table")
     v.expect(2, objId, "string")
@@ -374,13 +374,13 @@ end
 ---@field oldLabel string|string[]
 ---@field newLabel string|string[]
 local TabLabelUpdatedEvent = UIEvent:extend("am.ui.e.TabLabelUpdatedEvent")
-e.TabLabelUpdatedEvent = TextUpdateEvent
+e.TabLabelUpdatedEvent = TabLabelUpdatedEvent
 ---@param output cc.output
 ---@param objId string
 ---@param tabId string
 ---@param oldLabel string|nil
 ---@param newLabel string
----@return am.ui.e.TextUpdateEvent
+---@return am.ui.e.TabLabelUpdatedEvent
 function TabLabelUpdatedEvent:init(output, objId, tabId, oldLabel, newLabel)
     v.expect(1, output, "table")
     v.expect(2, objId, "string")
@@ -388,7 +388,7 @@ function TabLabelUpdatedEvent:init(output, objId, tabId, oldLabel, newLabel)
     v.expect(4, oldLabel, "string", "nil")
     v.expect(5, newLabel, "string", "nil")
     h.requireOutput(output)
-    TextUpdateEvent.super.init(self, c.e.Events.tab_label_update, output, objId)
+    TabLabelUpdatedEvent.super.init(self, c.e.Events.tab_label_update, output, objId)
 
     self.tabId = tabId
     self.oldLabel = oldLabel
