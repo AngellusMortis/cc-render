@@ -233,6 +233,9 @@ function TabbedFrame:removeTab(lookup, output)
     end
 
     local tabIndex = self:getIndex(lookup)
+    if tabIndex == nil then
+        error(string.format("Could not find tab: %s", lookup))
+    end
     local oldIdMap = self.tabIndexIdMap
     local oldLabelMap = self.tabIndexLabelMap
     local tabId = oldIdMap[tabIndex]
@@ -279,7 +282,7 @@ function TabbedFrame:setLabel(output, lookup, label)
     v.expect(2, label, "string")
     local index = self:getIndex(lookup)
     if index == nil then
-        error("Could not find tab")
+        error(string.format("Could not find tab: %s", lookup))
     end
     if self.tabLabelMap[label] ~= nil then
         error(string.format("Label %s already exists", label))
@@ -304,6 +307,9 @@ end
 function TabbedFrame:getTab(lookup, output)
     v.expect(1, lookup, "number", "string")
     local index = self:getIndex(lookup)
+    if index == nil then
+        error(string.format("Could not find tab: %s", lookup))
+    end
     local tab = nil
     if index ~= nil then
         tab = self.tabs[index]
@@ -330,6 +336,10 @@ end
 function TabbedFrame:setActive(output, lookup)
     v.expect(2, lookup, "number", "string")
     local index = self:getIndex(lookup)
+    if index == nil then
+        require("am.log").debug(debug.traceback())
+        error(string.format("Could not find tab: %s", lookup))
+    end
 
     for tabIndex, tab in ipairs(self.tabs) do
         if tabIndex == index then
@@ -406,6 +416,7 @@ function TabbedFrame:render(output)
     if not self.visible then
         return
     end
+    output.clear()
     TabbedFrame.super.render(self, output)
     self:renderTabs(output)
     local tab = self:getActive(output)
@@ -454,12 +465,14 @@ function TabbedFrame:handle(output, event, ...)
     ---@diagnostic disable-next-line: redefined-local
     local event, args = core.cleanEventArgs(event, ...)
 
-    if event == c.e.Events.tab_created or event == c.e.Events.tab_removed or event == c.e.Events.tab_label_update then
-        self:renderTabs(output)
-    elseif event == c.e.Events.tab_change then
-        self:setActive(nil, args[1].newTabId)
-        self:render(output)
-        return true
+    if c.l.Events.UI[event] and args[1].objId == self.id then
+        if event == c.e.Events.tab_created or event == c.e.Events.tab_removed or event == c.e.Events.tab_label_update then
+            self:renderTabs(output)
+        elseif event == c.e.Events.tab_change then
+            self:setActive(nil, args[1].newTabId)
+            self:render(output)
+            return true
+        end
     end
     local frameScreen = nil
     if output ~= nil then
