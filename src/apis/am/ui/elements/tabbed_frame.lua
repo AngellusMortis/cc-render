@@ -337,7 +337,6 @@ function TabbedFrame:setActive(output, lookup)
     v.expect(2, lookup, "number", "string")
     local index = self:getIndex(lookup)
     if index == nil then
-        require("am.log").debug(debug.traceback())
         error(string.format("Could not find tab: %s", lookup))
     end
 
