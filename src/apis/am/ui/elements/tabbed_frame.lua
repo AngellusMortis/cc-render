@@ -398,11 +398,11 @@ function TabbedFrame:renderTabs(output)
         if index == self.active then
             label.obj.fillColor = h.getColor(self.activeTabFillColor, fillColor)
             label.obj.textColor = h.getColor(self.activeTabTextColor, textColor)
-            label.obj.borderColor = fillColor
+            label.obj.borderColor = h.getColor(self.activeTabFillColor, fillColor)
         else
             label.obj.fillColor = fillColor
             label.obj.textColor = textColor
-            label.obj.borderColor = h.getColor(self.activeTabFillColor, fillColor)
+            label.obj.borderColor = fillColor
         end
         offset = offset + #labelText + 2
     end
