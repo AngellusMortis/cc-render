@@ -9,7 +9,7 @@
     "apis/am/ui/elements/progress_bar.lua": "c7996da3ea324d83ebeeffccbccb9a2d7708642266ed234d1b68212045da88f3",
     "apis/am/ui/elements/text.lua": "744b3a49a0312a31a5a9a176f432f18f28c7e8b2ad26ac08603ae69fceec03b2",
     "apis/am/ui/elements/frame.lua": "3411ce6129d8ea1572c38f1a4240b759047f8cddab02b01058dcef21b9aa5d63",
-    "apis/am/ui/elements/tabbed_frame.lua": "05f8780edb7c278eeca144c20a9d711709bf89687f35c099575fac78c942d95c",
+    "apis/am/ui/elements/tabbed_frame.lua": "acd63d4da854b27ab14f07be0f9acbd19ce88a11d75186b2ee4fbcd91eefceb8",
     "apis/am/ui/elements/group.lua": "84c61fd4d735fb5e2f1a5dba43735167a90ce9a383c43c31450b6ab252251f07",
     "apis/am/ui/elements/screen.lua": "0720f29f804748d18aa5f0bf5a9824385505b69f504646d4ab4d38bb87ab1393",
     "apis/am/ui/event.lua": "447190788370eaacef1a660225312ae84879d9fb5ae2c4a09f43e8e0fd107209",
