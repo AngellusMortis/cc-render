@@ -415,7 +415,7 @@ function TabbedFrame:render(output)
     if not self.visible then
         return
     end
-    output.clear()
+    self:makeScreen(output):clear()
     TabbedFrame.super.render(self, output)
     self:renderTabs(output)
     local tab = self:getActive(output)

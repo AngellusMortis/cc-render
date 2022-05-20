@@ -1,4 +1,5 @@
 local v = require("cc.expect")
+local trunc = require("cc.strings").ensure_width
 
 local object = require("ext.object")
 local h = require("am.ui.helpers")
@@ -357,17 +358,16 @@ function FrameScreen:write(text)
     if self.pos.x > self.width then
         return
     end
+    local tWidth = self.width + 1 - self.pos.x
+    if #text > tWidth then
+        text = trunc(text, tWidth)
+    end
+    tWidth = #text
     self.output.setBackgroundColor(self:getBackgroundColor())
     self.output.setTextColor(self:getTextColor())
     self:setCursorPos(self.pos.x, self.pos.y)
-    for i = 1, #text, 1 do
-        local char = text:sub(i,i)
-        self.output.write(char)
-        self.pos.x = self.pos.x + 1
-        if self.pos.x > self.width then
-            return
-        end
-    end
+    self.output.write(text)
+    self.pos.x = self.pos.x + tWidth
 end
 
 ---Writes text to FrameScreen at current pos in specific color
