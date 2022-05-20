@@ -81,27 +81,27 @@ local function eventLoop()
             if not excluded_events[event[1]] then
                 eventText:update(event[1])
 
-                -- local eventArgsText = s:get("eventArgsText")
-                -- if event[1] == ui.c.e.Events.loop_cancel then
-                --     eventArgsText:update("")
-                -- elseif event[1] == ui.c.e.Events.button_activate then
-                --     eventArgsText:update(string.format("%s: %s", event[2].objId, event[2].touch))
-                -- elseif event[1] == ui.c.e.Events.button_deactivate then
-                --     eventArgsText:update(event[2].objId)
-                -- elseif event[1] == ui.c.e.Events.frame_scroll then
-                --     eventArgsText:update(
-                --         string.format("%s: %d", event[2].objId, event[2].newScroll)
-                --     )
-                -- -- elseif event[1] == ui.c.e.Events.tab_change then
-                --     -- eventArgsText:update(
-                --     --     string.format("%s: %s", event[2].newTabId)
-                --     -- )
-                -- elseif event[1] ~= ui.c.e.Events.text_update and event[1] ~= ui.c.e.Events.progress_update then
-                --     local frameEvent = event[2]
-                --     eventArgsText:update(
-                --         string.format("%s: %d, %d: %d", frameEvent.objId, frameEvent.x, frameEvent.y, frameEvent.clickArea)
-                --     )
-                -- end
+                local eventArgsText = s:get("eventArgsText")
+                if event[1] == ui.c.e.Events.loop_cancel then
+                    eventArgsText:update("")
+                elseif event[1] == ui.c.e.Events.button_activate then
+                    eventArgsText:update(string.format("%s: %s", event[2].objId, event[2].touch))
+                elseif event[1] == ui.c.e.Events.button_deactivate then
+                    eventArgsText:update(event[2].objId)
+                elseif event[1] == ui.c.e.Events.frame_scroll then
+                    eventArgsText:update(
+                        string.format("%s: %d", event[2].objId, event[2].newScroll)
+                    )
+                -- elseif event[1] == ui.c.e.Events.tab_change then
+                    -- eventArgsText:update(
+                    --     string.format("%s: %s", event[2].newTabId)
+                    -- )
+                elseif event[1] ~= ui.c.e.Events.text_update and event[1] ~= ui.c.e.Events.progress_update then
+                    local frameEvent = event[2]
+                    eventArgsText:update(
+                        string.format("%s: %d, %d: %d", frameEvent.objId, frameEvent.x, frameEvent.y, frameEvent.clickArea)
+                    )
+                end
             end
         end
         os.cancelTimer(timer)
