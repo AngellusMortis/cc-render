@@ -290,22 +290,25 @@ end
 
 ### Tabbed Frame
 
-A tabbed frame or just tabs is multiple frames you can switch between. Builtin navigation is still TBA, but you can create your own buttons and interface for switching tabs using the `setActive` method.
+A tabbed frame or just tabs is multiple frames you can switch between. You can change tabs using the `setActive` method or by adding built in tab navigation at the top of the frame using the `showTabs` option on initialization.
 
 ```lua
 require(settings.get("ghu.base") .. "core/apis/ghu")
 ui = require("am.ui")
 
-tabs = ui.TabbedFrame(ui.a.Anchor(3, 4))
+tabs = ui.TabbedFrame(ui.a.Anchor(3, 4), {showTabs=true})
 
-tab1 = tabs.tabs[1] -- the initial frame that is created
+tab1 = tabs:getTab("main") -- default tab added
+-- set tab label to "Tab 1" in header tabs
+-- instead of "main"
+tabs:setLabel("main", "Tab 1")
 -- add stuff to tab1
 
 tab2 = tabs:createTab("tab2")
 --- add stuff to tab2
 
 tabs:render(term) -- tab1 will render
-tabs:setActive(2)
+tabs:setActive("tab2")
 tabs:render(term) -- tab2 will render
 ```
 
